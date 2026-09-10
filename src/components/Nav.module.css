@@ -1,0 +1,275 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s ease, background 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.header.scrolled {
+  border-bottom-color: #000;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.nav {
+  width: 100%;
+}
+
+.navInner {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 2rem;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 3rem);
+  height: 72px;
+}
+
+/* Wordmark */
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  text-decoration: none;
+  color: #000;
+  transition: opacity 0.15s ease;
+}
+
+.wordmark:hover {
+  opacity: 0.75;
+}
+
+.wordmarkMain {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: #000;
+}
+
+.wordmarkTag {
+  font-size: 0.55rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: #808080;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-top: 3px;
+}
+
+/* Navigation Links */
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLink {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #000;
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 2px;
+  transition: color 0.15s ease;
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #ff3000;
+  transition: width 0.25s ease;
+}
+
+.navLink:hover {
+  color: #ff3000;
+}
+
+.navLink:hover::after {
+  width: 100%;
+}
+
+/* CTA Button */
+.ctaButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: #000;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 2px solid #000;
+  cursor: not-allowed;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.ctaButton:hover {
+  background: #ff3000;
+  border-color: #ff3000;
+  color: #fff;
+}
+
+.ctaButton:focus-visible {
+  outline: 2px solid #ff3000;
+  outline-offset: 2px;
+}
+
+.ctaArrow {
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.ctaButton:hover .ctaArrow {
+  transform: translateX(3px);
+}
+
+/* Mobile Menu Toggle */
+.menuToggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 8px;
+  background: none;
+  border: none;
+}
+
+.menuLine {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #000;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  transform-origin: center;
+}
+
+.menuOpen .menuLine:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menuOpen .menuLine:nth-child(2) {
+  opacity: 0;
+}
+
+.menuOpen .menuLine:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile Menu */
+.mobileMenu {
+  display: none;
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-top: 2px solid #000;
+  padding: 2rem clamp(1rem, 4vw, 3rem);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  overflow-y: auto;
+}
+
+.mobileMenu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mobileMenuOpen {
+  transform: translateX(0);
+}
+
+.mobileLink {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #000;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.mobileLink:hover {
+  color: #ff3000;
+}
+
+.mobileLinkNumber {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: #808080;
+  min-width: 24px;
+}
+
+.mobileCtaButton {
+  display: block;
+  width: 100%;
+  margin-top: 2rem;
+  padding: 1.25rem 2rem;
+  background: #000;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: center;
+  cursor: not-allowed;
+  border: 2px solid #000;
+  transition: background 0.2s ease;
+}
+
+.mobileCtaButton:hover {
+  background: #ff3000;
+  border-color: #ff3000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navInner {
+    grid-template-columns: 1fr auto;
+    height: 64px;
+  }
+
+  .navLinks {
+    display: none;
+  }
+
+  .ctaButton {
+    display: none;
+  }
+
+  .menuToggle {
+    display: flex;
+  }
+
+  .mobileMenu {
+    display: block;
+  }
+}

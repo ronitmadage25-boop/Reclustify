@@ -1,0 +1,254 @@
+/* ============================================
+   RECLUSTIFY — GLOBAL DESIGN SYSTEM
+   Swiss International Typographic Style
+   ============================================ */
+
+:root {
+  /* Color Tokens */
+  --white: #ffffff;
+  --black: #000000;
+  --muted: #f2f2f2;
+  --muted-dark: #e8e8e8;
+  --red: #ff3000;
+  --red-dark: #cc2600;
+  --grey-100: #f9f9f9;
+  --grey-200: #f2f2f2;
+  --grey-300: #e0e0e0;
+  --grey-400: #c0c0c0;
+  --grey-500: #808080;
+  --grey-600: #555555;
+  --grey-700: #333333;
+  --grey-800: #1a1a1a;
+  --grey-900: #0d0d0d;
+
+  /* Typography */
+  --font-primary: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* Font Sizes - Fluid Scale */
+  --text-xs: clamp(0.625rem, 1.2vw, 0.75rem);
+  --text-sm: clamp(0.75rem, 1.5vw, 0.875rem);
+  --text-base: clamp(0.875rem, 1.8vw, 1rem);
+  --text-md: clamp(1rem, 2vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 2.5vw, 1.375rem);
+  --text-xl: clamp(1.375rem, 3vw, 1.75rem);
+  --text-2xl: clamp(1.75rem, 4vw, 2.5rem);
+  --text-3xl: clamp(2.25rem, 5vw, 3.5rem);
+  --text-4xl: clamp(3rem, 7vw, 5.5rem);
+  --text-5xl: clamp(4rem, 10vw, 8rem);
+  --text-6xl: clamp(5rem, 14vw, 12rem);
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+  --space-40: 10rem;
+  --space-48: 12rem;
+
+  /* Border */
+  --border-thin: 1px solid var(--black);
+  --border-thick: 2px solid var(--black);
+  --border-muted: 1px solid var(--grey-300);
+
+  /* Grid */
+  --grid-max: 1440px;
+  --grid-gutter: clamp(1rem, 4vw, 3rem);
+  --grid-columns: 12;
+
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--white);
+  color: var(--black);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-primary);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+p {
+  line-height: 1.65;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-primary);
+  border: none;
+  background: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.container {
+  width: 100%;
+  max-width: var(--grid-max);
+  margin: 0 auto;
+  padding: 0 var(--grid-gutter);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Text utilities */
+.text-red { color: var(--red); }
+.text-muted { color: var(--grey-500); }
+.text-upper { text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* Border utilities */
+.border-top { border-top: var(--border-thin); }
+.border-bottom { border-bottom: var(--border-thin); }
+.border-left { border-left: var(--border-thin); }
+.border-right { border-right: var(--border-thin); }
+.border-all { border: var(--border-thin); }
+
+/* ============================================
+   PATTERNS — Subtle structural textures
+   ============================================ */
+
+.dot-grid {
+  background-image: radial-gradient(circle, #c0c0c0 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.line-grid {
+  background-image:
+    linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.diagonal-lines {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    rgba(0,0,0,0.03) 6px,
+    rgba(0,0,0,0.03) 7px
+  );
+}
+
+/* ============================================
+   SCROLL REVEAL ANIMATIONS
+   ============================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-32px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(32px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Stagger delays */
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }
+.delay-5 { transition-delay: 0.5s; }
+.delay-6 { transition-delay: 0.6s; }
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

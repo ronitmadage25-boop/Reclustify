@@ -1,0 +1,362 @@
+.section {
+  border-top: 2px solid #000;
+  background: #fff;
+  overflow: hidden;
+}
+
+.sectionId {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem clamp(1rem, 4vw, 3rem);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.sectionNum {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #808080;
+}
+
+.sectionLine {
+  flex: 1;
+  height: 1px;
+  background: rgba(0,0,0,0.1);
+}
+
+.sectionTag {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #808080;
+}
+
+.inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 3rem) clamp(3rem, 6vw, 6rem);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+/* Left Column */
+.leftCol {
+  padding: clamp(3rem, 5vw, 5rem) 3rem clamp(3rem, 5vw, 5rem) 0;
+  border-right: 1px solid #e0e0e0;
+}
+
+/* Reveal */
+.headerBlock,
+.exampleCard,
+.factorsHeader,
+.totalScore {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.revealed {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.labelTag {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #ff3000;
+  padding: 0.3rem 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.heading {
+  font-size: clamp(2rem, 4.5vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: #000;
+  margin-bottom: 1.5rem;
+}
+
+.headingAccent {
+  -webkit-text-stroke: 2px #000;
+  color: transparent;
+}
+
+.subtext {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  line-height: 1.7;
+  color: #444;
+  margin-bottom: 2.5rem;
+  max-width: 380px;
+}
+
+/* Example Card */
+.exampleCard {
+  border: 2px solid #000;
+  background: #f9f9f9;
+}
+
+.exampleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  background: #000;
+}
+
+.exampleBadge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+}
+
+.examplePriority {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #ff3000;
+  text-transform: uppercase;
+}
+
+.exampleContent {
+  display: flex;
+  gap: 0;
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.exampleStat {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.exampleStat + .exampleStat {
+  border-left: 1px solid #e0e0e0;
+  padding-left: 1.5rem;
+  margin-left: 1rem;
+}
+
+.statNum {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #000;
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #555;
+}
+
+.exampleNote {
+  padding: 0.875rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #555;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* Right Column */
+.rightCol {
+  padding: clamp(3rem, 5vw, 5rem) 0 clamp(3rem, 5vw, 5rem) clamp(1.5rem, 3vw, 3rem);
+}
+
+.factorsHeader {
+  margin-bottom: 2rem;
+}
+
+.factorsTitle {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #000;
+  margin-bottom: 0.25rem;
+}
+
+.factorsSub {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #808080;
+}
+
+/* Factors */
+.factors {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 2rem;
+}
+
+.factor {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.factorVisible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.factorTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.factorLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.factorValue {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #808080;
+}
+
+.factorBarContainer {
+  height: 4px;
+  background: #e0e0e0;
+  margin-bottom: 0.35rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.factorBar {
+  height: 100%;
+  background: #000;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.factorWeight {
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #808080;
+}
+
+/* Total Score */
+.totalScore {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border: 2px solid #000;
+  background: #000;
+  color: #fff;
+}
+
+.scoreLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+}
+
+.scoreValue {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.scoreNum {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #fff;
+  transition: all 1s ease;
+}
+
+.scoreMax {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.4);
+}
+
+.scoreBadge {
+  margin-left: auto;
+  padding: 0.4rem 0.875rem;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.badgeHigh {
+  background: #ff3000;
+  border-color: #ff3000;
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .leftCol {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 3rem 0;
+  }
+
+  .rightCol {
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .totalScore {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .scoreBadge {
+    margin-left: 0;
+  }
+}

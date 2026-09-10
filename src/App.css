@@ -1,0 +1,44 @@
+/* App-level resets and global structure */
+
+#root {
+  min-height: 100vh;
+}
+
+main {
+  display: block;
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  outline: 2px solid #ff3000;
+  outline-offset: 2px;
+}
+
+/* Selection styles */
+::selection {
+  background: #ff3000;
+  color: #fff;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f2f2f2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff3000;
+}
