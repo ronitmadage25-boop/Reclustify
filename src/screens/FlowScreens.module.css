@@ -1,0 +1,681 @@
+/* ============================================
+   FLOW SCREENS (ONBOARDING & ROLE ASSIGNMENT)
+   Swiss International Style
+   ============================================ */
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2.5rem);
+  width: 100%;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.stepNum {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #ff3000;
+}
+
+.tagline {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #808080;
+}
+
+.card {
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 8px 8px 0px #000000;
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.5rem;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.badge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.badgeAdmin {
+  color: #ff3000;
+}
+
+.badgeSub {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.userEmail {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
+.cardContent {
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: #000000;
+  margin-bottom: 1rem;
+}
+
+.titleAccent {
+  -webkit-text-stroke: 1.5px #000000;
+  color: transparent;
+}
+
+.subtitle {
+  font-size: clamp(0.85rem, 1.4vw, 1rem);
+  line-height: 1.6;
+  color: #555555;
+  margin-bottom: 2.25rem;
+  max-width: 680px;
+}
+
+/* Role Grid */
+.roleGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.roleCard {
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 280px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.roleCard:hover {
+  background-color: #000000;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px #ff3000;
+}
+
+.roleCard:hover .roleTag,
+.roleCard:hover .roleDesc {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.roleCard:hover .roleFooter {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.roleCard:hover .roleArrow {
+  transform: translateX(4px);
+}
+
+.roleCard:focus-visible {
+  outline: 2px solid #ff3000;
+  outline-offset: 2px;
+}
+
+.roleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.roleNumber {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #000000;
+  transition: color 0.2s ease;
+}
+
+.adminNum {
+  color: #ff3000;
+}
+
+.roleCard:hover .roleNumber {
+  color: #ff3000;
+}
+
+.roleTag {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #808080;
+}
+
+.roleTitle {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  line-height: 1;
+}
+
+.roleDesc {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #555555;
+  margin-bottom: 1.5rem;
+  flex: 1;
+}
+
+.roleFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.roleArrow {
+  font-size: 1rem;
+  transition: transform 0.15s ease;
+}
+
+/* Search Box */
+.searchBox {
+  display: flex;
+  align-items: center;
+  border: 2px solid #000000;
+  padding: 0.75rem 1rem;
+  background-color: #ffffff;
+  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+}
+
+.searchIcon {
+  font-size: 1.1rem;
+  color: #808080;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #000000;
+  outline: none;
+}
+
+/* College Grid */
+.collegeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 2rem;
+  padding-right: 0.25rem;
+}
+
+.collegeItem {
+  border: 1px solid #c0c0c0;
+  padding: 1rem;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.collegeItem:hover {
+  border-color: #000000;
+  background-color: #f9f9f9;
+}
+
+.collegeSelected {
+  border: 2px solid #000000 !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  box-shadow: 4px 4px 0px #ff3000;
+}
+
+.collegeSelected .collegeCode {
+  color: #ff3000;
+}
+
+.collegeSelected .collegeClusters {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.collegeSelected .collegeName {
+  color: #ffffff;
+}
+
+.collegeSelected .collegeCity {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.collegeTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.collegeCode {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #000000;
+}
+
+.collegeClusters {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #808080;
+  letter-spacing: 0.1em;
+}
+
+.collegeName {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #000000;
+  line-height: 1.3;
+  margin-bottom: 0.2rem;
+}
+
+.collegeCity {
+  font-size: 0.7rem;
+  color: #666666;
+}
+
+/* Forms */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.input,
+.select,
+.textarea {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid #000000;
+  border-radius: 0;
+  background-color: #ffffff;
+  color: #000000;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: #ff3000;
+  box-shadow: 3px 3px 0px #000000;
+}
+
+.inputDisabled {
+  background-color: #f2f2f2;
+  color: #666666;
+  border-color: #c0c0c0;
+  cursor: not-allowed;
+}
+
+.inputNote {
+  font-size: 0.65rem;
+  color: #808080;
+  font-weight: 500;
+}
+
+.formError {
+  padding: 0.6rem 0.85rem;
+  background-color: #fff0ee;
+  border-left: 3px solid #ff3000;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 1.25rem;
+}
+
+/* Upload Zone */
+.uploadZone {
+  border: 2px dashed #000000;
+  background-color: #f9f9f9;
+  padding: clamp(2rem, 4vw, 3rem) 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.uploadZone:hover {
+  background-color: #f0f0f0;
+}
+
+.fileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.uploadLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.uploadIcon {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #000000;
+}
+
+.uploadTitle {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.uploadSubtitle {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #808080;
+  letter-spacing: 0.1em;
+}
+
+.uploadedFileRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border: 1px solid #000000;
+  background-color: #ffffff;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.fileIcon {
+  font-size: 0.7rem;
+  font-weight: 900;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 0.35rem 0.5rem;
+}
+
+.fileDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fileName {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+.fileSize {
+  font-size: 0.65rem;
+  color: #666666;
+}
+
+.verifiedTag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #008844;
+}
+
+/* Code Reveal / Enter */
+.codeRevealBox {
+  border: 2px solid #000000;
+  background-color: #f2f2f2;
+  padding: 2rem;
+  text-align: center;
+  margin: 1.5rem 0 2rem;
+}
+
+.codeRevealTag {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #808080;
+  margin-bottom: 0.75rem;
+}
+
+.codeDisplay {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 900;
+  letter-spacing: 0.25em;
+  color: #000000;
+  font-family: monospace;
+  margin-bottom: 0.5rem;
+}
+
+.codeHelp {
+  font-size: 0.75rem;
+  color: #555555;
+  font-weight: 600;
+}
+
+.codeInputWrapper {
+  margin: 2rem 0;
+}
+
+.codeInput {
+  font-family: monospace;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  text-align: center;
+  padding: 1rem;
+  border: 2px solid #000000;
+  width: 100%;
+  outline: none;
+  background-color: #ffffff;
+}
+
+.codeInput:focus {
+  border-color: #ff3000;
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.codeHint {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #808080;
+  letter-spacing: 0.15em;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.existingCodeNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 1.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.linkBtn {
+  background: transparent;
+  border: none;
+  color: #ff3000;
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+.clockIconBox {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+/* Buttons */
+.buttonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  background-color: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background-color: #ff3000;
+  border-color: #ff3000;
+  color: #ffffff;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  background-color: transparent;
+  color: #666666;
+  border: 1px solid #c0c0c0;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.backBtn:hover {
+  border-color: #000000;
+  color: #000000;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.5rem;
+  background-color: #f2f2f2;
+  border-top: 1px solid #000000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #808080;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .roleGrid,
+  .collegeGrid,
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .buttonRow {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .primaryBtn,
+  .backBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .card {
+    box-shadow: 4px 4px 0px #000000;
+  }
+}

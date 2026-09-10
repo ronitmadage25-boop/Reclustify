@@ -1,0 +1,1254 @@
+/* ============================================
+   ADMINISTRATOR SCREENS
+   Swiss International Style
+   ============================================ */
+
+.dashboard {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 3vw, 2.5rem);
+  width: 100%;
+}
+
+/* Banner */
+.banner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #000000;
+  margin-bottom: 2.5rem;
+  gap: 1.5rem;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #ff3000;
+  margin-bottom: 0.5rem;
+}
+
+.bannerTitle {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.bannerSub {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #666666;
+}
+
+.updateAlert {
+  background-color: #000000;
+  color: #ffffff;
+  border-left: 4px solid #ff3000;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 2rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Metrics Row */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 2px solid #000000;
+  background-color: #000000;
+  margin-bottom: 3rem;
+}
+
+.metricCard {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-right: 1px solid #000000;
+  display: flex;
+  flex-direction: column;
+}
+
+.metricCard:last-child {
+  border-right: none;
+}
+
+.metricLabel {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #808080;
+  margin-bottom: 0.5rem;
+}
+
+.metricValue {
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.metricAccent {
+  color: #ff3000;
+}
+
+.metricNote {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #666666;
+}
+
+/* Main Grid */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 2.5rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #000000;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.sectionSub {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #808080;
+  margin-top: 0.2rem;
+}
+
+.clusterList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.clusterCard {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  padding: 1.5rem;
+}
+
+.clusterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.clusterId {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: #000000;
+}
+
+.statusBadge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.25rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.statusHigh {
+  background-color: #ff3000;
+  color: #ffffff;
+}
+
+.statusMedium {
+  background-color: #f2f2f2;
+  border: 1px solid #000000;
+  color: #000000;
+}
+
+.clusterTitle {
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: #000000;
+  margin-bottom: 0.75rem;
+}
+
+.clusterDesc {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #555555;
+  margin-bottom: 1.25rem;
+}
+
+.clusterMeta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #808080;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.clusterFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.assignee {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+.actionBtn {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.actionBtn:hover {
+  background-color: #ff3000;
+  border-color: #ff3000;
+}
+
+/* Department Status Side */
+.deptStatusList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.deptItem {
+  border: 1px solid #000000;
+  padding: 1.25rem;
+  background-color: #ffffff;
+}
+
+.deptItemTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.deptName {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #000000;
+}
+
+.deptCount {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #ff3000;
+  letter-spacing: 0.1em;
+}
+
+.progressBar {
+  height: 6px;
+  background-color: #f2f2f2;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 0.5rem;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #000000;
+}
+
+.deptNote {
+  font-size: 0.65rem;
+  color: #666666;
+}
+
+.quickActionsCard {
+  border: 2px solid #000000;
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+}
+
+.cardHeaderSmall {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #808080;
+  margin-bottom: 1rem;
+}
+
+.shortcutBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shortcutBtn {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background-color: #ffffff;
+  border: 1px solid #000000;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shortcutBtn:hover {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* Registry Filter Bar */
+.registryFilterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.searchWrap {
+  flex: 1;
+}
+
+.registrySearch {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #000000;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background-color: #ffffff;
+  outline: none;
+}
+
+.registrySearch:focus {
+  border-color: #ff3000;
+}
+
+.filterDropdowns {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.selectFilter {
+  padding: 0.75rem 1rem;
+  border: 2px solid #000000;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background-color: #ffffff;
+  outline: none;
+}
+
+/* Table */
+.tableCard {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  overflow-x: auto;
+}
+
+.clusterTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.clusterTable th {
+  padding: 0.85rem 1rem;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.clusterTable td {
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 0.8rem;
+}
+
+.clusterTable tr:last-child td {
+  border-bottom: none;
+}
+
+.clusterTable tr:hover td {
+  background-color: #fafafa;
+}
+
+.tableId {
+  font-family: monospace;
+  font-weight: 900;
+  color: #000000;
+}
+
+.tableTitle {
+  font-weight: 800;
+  color: #000000;
+  line-height: 1.25;
+}
+
+.tableLocation {
+  font-size: 0.7rem;
+  color: #666666;
+  margin-top: 0.2rem;
+}
+
+.tableDept {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #444444;
+}
+
+.tableReports {
+  font-weight: 800;
+  color: #000000;
+}
+
+.priorityBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.2rem 0.5rem;
+  letter-spacing: 0.08em;
+}
+
+.priHigh {
+  background-color: #ff3000;
+  color: #ffffff;
+}
+
+.priMed {
+  background-color: #f2f2f2;
+  border: 1px solid #000000;
+  color: #000000;
+}
+
+.priLow {
+  background-color: #f9f9f9;
+  color: #666666;
+}
+
+.statusPill {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 0.25rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.pillProgress {
+  border: 1px solid #000000;
+  color: #000000;
+}
+
+.pillResolved {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.tableInspectBtn {
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 0.75rem;
+  background-color: transparent;
+  border: 1px solid #000000;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tableInspectBtn:hover {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* Issue Details */
+.reportsConvergenceList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.convergedReportCard {
+  border: 1px solid #000000;
+  background-color: #ffffff;
+  padding: 1.25rem;
+}
+
+.convergedTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.convergedId {
+  font-family: monospace;
+  font-weight: 900;
+  font-size: 0.7rem;
+}
+
+.similarityScore {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #ff3000;
+  letter-spacing: 0.1em;
+}
+
+.convergedText {
+  font-size: 0.85rem;
+  font-style: italic;
+  line-height: 1.45;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.convergedTime {
+  font-size: 0.65rem;
+  color: #808080;
+}
+
+.hypothesisCard {
+  border: 2px solid #000000;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 1.5rem;
+}
+
+.hypoTag {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #ff3000;
+}
+
+.hypoConfidence {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hypothesisHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.hypoText {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.priorityBox {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.priorityBoxHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #000000;
+  margin-bottom: 1.25rem;
+}
+
+.priHeaderTitle {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.priHeaderScore {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #ff3000;
+}
+
+.factorsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.factorRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+.factorName {
+  color: #666666;
+}
+
+.factorVal {
+  color: #000000;
+}
+
+.factorBarWrap {
+  height: 6px;
+  background-color: #f2f2f2;
+  border: 1px solid #e0e0e0;
+}
+
+.factorBarFill {
+  height: 100%;
+  background-color: #000000;
+}
+
+.statusControlCard {
+  border: 2px solid #000000;
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+}
+
+.currentStatusDisplay {
+  font-size: 0.85rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 1.25rem;
+}
+
+.statusButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statusActionBtn {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.75rem;
+  border: 1px solid #000000;
+  background-color: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.statusActionBtn:hover {
+  background-color: #f0f0f0;
+}
+
+.statusBtnActive {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.statusBtnResolved {
+  background-color: #ff3000 !important;
+  color: #ffffff !important;
+  border-color: #ff3000 !important;
+}
+
+/* Analytics */
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.analyticsCard {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  padding: 1.5rem;
+}
+
+.analyticsCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #000000;
+  margin-bottom: 1.5rem;
+}
+
+.cardHeaderTitle {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.cardHeaderTag {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #808080;
+  letter-spacing: 0.12em;
+}
+
+.barChart {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.75rem;
+  height: 240px;
+  align-items: flex-end;
+  padding-bottom: 0.5rem;
+}
+
+.chartBarItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.chartBarTrack {
+  width: 100%;
+  flex: 1;
+  background-color: #f2f2f2;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.chartBarProgress {
+  width: 100%;
+  background-color: #000000;
+  transition: height 0.3s ease;
+}
+
+.chartBarItem:first-child .chartBarProgress {
+  background-color: #ff3000;
+}
+
+.chartBarVal {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #000000;
+  margin-bottom: 0.25rem;
+}
+
+.chartBarLabel {
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: #808080;
+  letter-spacing: 0.05em;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.benchmarkList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.benchmarkItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+}
+
+.benchDept {
+  display: flex;
+  flex-direction: column;
+}
+
+.benchDept strong {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.benchDept span {
+  font-size: 0.65rem;
+  color: #666666;
+}
+
+.benchMetrics {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.benchAvg {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #ff3000;
+}
+
+.benchRate {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #444444;
+}
+
+/* Departments Screen */
+.deptManagementGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 2rem;
+}
+
+.deptCardList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.deptManageItem {
+  border: 1px solid #000000;
+  padding: 1.25rem;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.deptManageItem:hover {
+  background-color: #f9f9f9;
+}
+
+.deptManageSelected {
+  border: 2px solid #000000 !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  box-shadow: 6px 6px 0px #ff3000;
+}
+
+.deptManageSelected .deptCode {
+  color: #ff3000;
+}
+
+.deptManageSelected .deptClustersBadge {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.deptManageSelected .deptTitleText {
+  color: #ffffff;
+}
+
+.deptManageSelected .deptHeadText {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.deptManageTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.deptCode {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: #000000;
+}
+
+.deptClustersBadge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #ff3000;
+}
+
+.deptTitleText {
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.5rem;
+}
+
+.deptHeadText {
+  font-size: 0.7rem;
+  color: #666666;
+}
+
+.deptDetailBox {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  padding: 2rem;
+}
+
+.deptDetailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #000000;
+  margin-bottom: 1.5rem;
+}
+
+.detailTag {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #808080;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.detailTitle {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #000000;
+}
+
+.detailGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.detailLabel {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #808080;
+}
+
+.detailValue {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #000000;
+}
+
+.routingRulesBox {
+  background-color: #f9f9f9;
+  border: 1px solid #000000;
+  padding: 1.25rem;
+}
+
+.rulesTitle {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #000000;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.rulesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #444444;
+  line-height: 1.4;
+}
+
+/* Settings Screen */
+.settingsGrid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2rem;
+}
+
+.settingsCard {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.settingsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #000000;
+  margin-bottom: 1.5rem;
+}
+
+.settingsTitle {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+}
+
+.settingsBadge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #808080;
+}
+
+.settingsForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.formLabel {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #000000;
+}
+
+.formInput {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #000000;
+  border-radius: 0;
+  background-color: #ffffff;
+  color: #000000;
+  outline: none;
+}
+
+.formInput:focus {
+  border-color: #ff3000;
+}
+
+.inputDisabled {
+  background-color: #f2f2f2;
+  color: #666666;
+  border-color: #c0c0c0;
+  cursor: not-allowed;
+}
+
+.formHint {
+  font-size: 0.65rem;
+  color: #808080;
+}
+
+.settingsDesc {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #555555;
+  margin-bottom: 1.5rem;
+}
+
+.resetBtn {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  padding: 0.875rem;
+  background-color: transparent;
+  border: 2px solid #000000;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.resetBtn:hover {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.signOutCardBtn {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  padding: 0.875rem;
+  background-color: #ff3000;
+  border: 2px solid #ff3000;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.signOutCardBtn:hover {
+  background-color: #cc2600;
+  border-color: #cc2600;
+}
+
+/* Global Buttons */
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  background-color: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.primaryBtn:hover {
+  background-color: #ff3000;
+  border-color: #ff3000;
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background-color: transparent;
+  color: #000000;
+  border: 1px solid #000000;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.secondaryBtn:hover {
+  background-color: #f2f2f2;
+}
+
+.textBtn {
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #000000;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.textBtn:hover {
+  color: #ff3000;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .metricCard:nth-child(2) {
+    border-right: none;
+  }
+  .metricCard:nth-child(1),
+  .metricCard:nth-child(2) {
+    border-bottom: 1px solid #000000;
+  }
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+  .analyticsGrid {
+    grid-template-columns: 1fr;
+  }
+  .deptManagementGrid {
+    grid-template-columns: 1fr;
+  }
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .registryFilterBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filterDropdowns {
+    flex-direction: column;
+  }
+  .clusterMeta {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .clusterFooter {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .actionBtn {
+    width: 100%;
+    text-align: center;
+  }
+  .primaryBtn,
+  .secondaryBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}

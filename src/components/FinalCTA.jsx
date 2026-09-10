@@ -1,7 +1,9 @@
 import { useRef, useEffect, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 import styles from './FinalCTA.module.css'
 
 export default function FinalCTA() {
+  const { session, userRole, setCurrentScreen, setAuthModalOpen } = useAuth()
   const sectionRef = useRef(null)
   const [visible, setVisible] = useState(false)
 
@@ -55,21 +57,31 @@ export default function FinalCTA() {
           </h2>
 
           <div className={`${styles.ctaRow} ${visible ? styles.revealed : ''}`} style={{ transitionDelay: '0.5s' }}>
-            <button
-              className={styles.ctaButton}
-              type="button"
-              disabled
-              aria-disabled="true"
-              aria-label="Get Started with Reclustify (coming soon)"
-            >
-              <span>GET STARTED</span>
-              <span className={styles.ctaArrow} aria-hidden="true">→</span>
-            </button>
+            {session ? (
+              <button
+                className={styles.ctaButton}
+                type="button"
+                onClick={() => setCurrentScreen(userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard')}
+                aria-label="Enter Dashboard"
+              >
+                <span>ENTER DASHBOARD</span>
+                <span className={styles.ctaArrow} aria-hidden="true">→</span>
+              </button>
+            ) : (
+              <button
+                className={styles.ctaButton}
+                type="button"
+                onClick={() => setAuthModalOpen(true)}
+                aria-label="Get Started with Reclustify"
+              >
+                <span>GET STARTED</span>
+                <span className={styles.ctaArrow} aria-hidden="true">→</span>
+              </button>
+            )}
             <div className={styles.ctaNote}>
-              <span className={styles.ctaNoteTag}>LAUNCHING SOON</span>
+              <span className={styles.ctaNoteTag}>AUTHENTICATION ENABLED</span>
               <p className={styles.ctaNoteText}>
-                Platform functionality coming soon.
-                This is a visual preview only.
+                Connect instantly with your Google account.
               </p>
             </div>
           </div>

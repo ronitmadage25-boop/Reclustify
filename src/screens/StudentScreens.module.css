@@ -1,0 +1,1142 @@
+/* ============================================
+   STUDENT EXPERIENCE SCREENS
+   Swiss International Style
+   ============================================ */
+
+.dashboard {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 3vw, 2.5rem);
+  width: 100%;
+}
+
+/* Banner */
+.banner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #000000;
+  margin-bottom: 2.5rem;
+  gap: 1.5rem;
+}
+
+.studentBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #ff3000;
+  margin-bottom: 0.5rem;
+}
+
+.bannerTitle {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.bannerSub {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #666666;
+}
+
+.reportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background-color: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.reportBtn:hover {
+  background-color: #ff3000;
+  border-color: #ff3000;
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.reportBtnIcon {
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 2px solid #000000;
+  margin-bottom: 3rem;
+  background-color: #000000;
+}
+
+.statCard {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-right: 1px solid #000000;
+  display: flex;
+  flex-direction: column;
+}
+
+.statCard:last-child {
+  border-right: none;
+}
+
+.statLabel {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #808080;
+  margin-bottom: 0.5rem;
+}
+
+.statValue {
+  font-size: clamp(2.5rem, 5vw, 3.75rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.statAccent {
+  color: #ff3000;
+}
+
+.statDetail {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #666666;
+}
+
+/* Main Grid */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2.5rem;
+}
+
+.blockHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #000000;
+  margin-bottom: 1.5rem;
+}
+
+.blockTitle {
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.blockSub {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #808080;
+  margin-top: 0.2rem;
+}
+
+.liveIndicator {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #ff3000;
+  border: 1px solid #ff3000;
+  padding: 0.2rem 0.5rem;
+}
+
+/* Clusters List */
+.clusterList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.clusterItem {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  transition: all 0.15s ease;
+}
+
+.clusterItem:hover {
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.clusterMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.clusterId {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: #000000;
+}
+
+.badge {
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #000000;
+  text-transform: uppercase;
+}
+
+.badgeHigh {
+  background-color: #ff3000;
+  border-color: #ff3000;
+  color: #ffffff;
+}
+
+.badgeMed {
+  background-color: #f2f2f2;
+  color: #000000;
+}
+
+.badgeResolved {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.badgeProgress {
+  background-color: #f9f9f9;
+  color: #ff3000;
+  border-color: #ff3000;
+}
+
+.clusterTitle {
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: #000000;
+  margin-bottom: 0.75rem;
+}
+
+.clusterSummary {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #555555;
+  margin-bottom: 1.25rem;
+}
+
+.clusterBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #808080;
+}
+
+/* My Reports Side */
+.myReportsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.reportCard {
+  border: 1px solid #000000;
+  padding: 1.25rem;
+  background-color: #ffffff;
+}
+
+.reportTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.reportId {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 0.12em;
+}
+
+.reportTitle {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.reportInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #666666;
+  margin-bottom: 1rem;
+}
+
+.reportActions {
+  padding-top: 0.75rem;
+  border-top: 1px solid #f2f2f2;
+}
+
+.trackBtn {
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #000000;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.trackBtn:hover {
+  color: #ff3000;
+}
+
+.textBtn {
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #000000;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.textBtn:hover {
+  color: #ff3000;
+}
+
+.helpCard {
+  border: 2px solid #000000;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 1.5rem;
+}
+
+.helpHeader {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #ff3000;
+  margin-bottom: 0.5rem;
+}
+
+.helpText {
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.35;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.helpSub {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Forms & Modals (Report Problem, AI Analysis, Success, Tracking) */
+.formContainer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 3vw, 2.5rem);
+  width: 100%;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.stepNum {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #ff3000;
+}
+
+.tagline {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #808080;
+}
+
+.formCard {
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 8px 8px 0px #000000;
+  overflow: hidden;
+}
+
+.formCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.5rem;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.formBody {
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.formTitle {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: #000000;
+  margin-bottom: 1rem;
+}
+
+.titleAccent {
+  -webkit-text-stroke: 1.5px #000000;
+  color: transparent;
+}
+
+.formSubtitle {
+  font-size: clamp(0.85rem, 1.4vw, 1rem);
+  line-height: 1.6;
+  color: #555555;
+  margin-bottom: 2rem;
+  max-width: 680px;
+}
+
+.formError {
+  padding: 0.6rem 0.85rem;
+  background-color: #fff0ee;
+  border-left: 3px solid #ff3000;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 1.25rem;
+}
+
+.inputGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fullRow {
+  grid-column: 1 / -1;
+}
+
+.label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.input,
+.select,
+.textarea {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid #000000;
+  border-radius: 0;
+  background-color: #ffffff;
+  color: #000000;
+  outline: none;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: #ff3000;
+  box-shadow: 3px 3px 0px #000000;
+}
+
+.severityToggle {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.25rem;
+}
+
+.sevBtn {
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 0.75rem 0.25rem;
+  background-color: #f2f2f2;
+  border: 1px solid #c0c0c0;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sevActive {
+  background-color: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+.formCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.5rem;
+  background-color: #f2f2f2;
+  border-top: 1px solid #000000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #808080;
+}
+
+/* AI Analysis Preview */
+.badgePulse {
+  background-color: #ff3000;
+  color: #ffffff;
+  border-color: #ff3000;
+}
+
+.analysisGrid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.analysisBox {
+  border: 2px solid #000000;
+  padding: 1.25rem;
+  background-color: #ffffff;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.matchedClusterBox {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.matchedClusterBox .boxTitle {
+  color: #ffffff;
+}
+
+.matchedClusterBox .boxDesc {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.matchedClusterBox .boxMeta {
+  color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.boxTag {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #808080;
+  margin-bottom: 0.5rem;
+}
+
+.boxTitle {
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.boxDesc {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #555555;
+  margin-bottom: 1rem;
+}
+
+.boxMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.matchIndicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.25rem;
+  padding: 0 0.5rem;
+}
+
+.matchScore {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #ff3000;
+  line-height: 1;
+}
+
+.matchLabel {
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.matchArrow {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #000000;
+}
+
+.clusterBadgeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.systemCallout {
+  border-left: 3px solid #ff3000;
+  background-color: #f9f9f9;
+  padding: 1rem 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.calloutTitle {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #ff3000;
+  margin-bottom: 0.25rem;
+}
+
+.calloutText {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #444444;
+}
+
+/* Success Screen */
+.successIconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 1.75rem;
+  font-weight: 900;
+  margin-bottom: 1.5rem;
+}
+
+.ticketSummary {
+  border: 2px solid #000000;
+  margin: 1.5rem 0 2rem;
+}
+
+.ticketRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #000000;
+  background-color: #ffffff;
+}
+
+.ticketRow:last-child {
+  border-bottom: none;
+}
+
+.ticketLabel {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #808080;
+}
+
+.ticketValue {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #000000;
+}
+
+.ticketAccent {
+  color: #ff3000;
+}
+
+/* My Reports Filter */
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.filterTabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filterTab {
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.45rem 0.85rem;
+  background-color: transparent;
+  border: 1px solid #c0c0c0;
+  color: #666666;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filterTabActive {
+  background-color: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+
+.filterCount {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #808080;
+}
+
+.reportsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.detailedReportCard {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.reportCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.reportCardIds {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.clusterIdBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 0.2rem 0.5rem;
+}
+
+.detailedReportTitle {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #000000;
+  margin-bottom: 0.5rem;
+}
+
+.detailedReportLoc {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666666;
+  margin-bottom: 1.25rem;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #808080;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.detailedReportFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clusterNotice {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+.primaryBtnSm {
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 0.5rem 0.85rem;
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.primaryBtnSm:hover {
+  background-color: #ff3000;
+  border-color: #ff3000;
+}
+
+/* Timeline */
+.trackingHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.backBtnSm {
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+}
+
+.backBtnSm:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 2rem 0;
+}
+
+.timelineItem {
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.timelineLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.timelineNode {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #c0c0c0;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #808080;
+  z-index: 1;
+}
+
+.timelineCompleted .timelineNode {
+  background-color: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+
+.timelineCurrent .timelineNode {
+  background-color: #ff3000;
+  border-color: #ff3000;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 48, 0, 0.2);
+}
+
+.timelineLine {
+  width: 2px;
+  flex: 1;
+  min-height: 48px;
+  background-color: #e0e0e0;
+}
+
+.lineDone {
+  background-color: #000000;
+}
+
+.timelineContent {
+  flex: 1;
+  padding-bottom: 2rem;
+}
+
+.timelineMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.timelineLabel {
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.timelineTime {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #808080;
+}
+
+.timelineDesc {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #555555;
+}
+
+.deptCard {
+  border: 1px solid #000000;
+  background-color: #f9f9f9;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.deptCardTag {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #808080;
+  margin-bottom: 0.25rem;
+}
+
+.deptCardName {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.2rem;
+}
+
+.deptCardLocation {
+  font-size: 0.7rem;
+  color: #666666;
+}
+
+.slaBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.35rem 0.75rem;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+/* Common Buttons */
+.buttonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  background-color: #000000;
+  color: #ffffff;
+  border: 2px solid #000000;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background-color: #ff3000;
+  border-color: #ff3000;
+  color: #ffffff;
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background-color: transparent;
+  color: #000000;
+  border: 1px solid #000000;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.secondaryBtn:hover {
+  background-color: #f2f2f2;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  background-color: transparent;
+  color: #666666;
+  border: 1px solid #c0c0c0;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.backBtn:hover {
+  border-color: #000000;
+  color: #000000;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .statCard:nth-child(2) {
+    border-right: none;
+  }
+  .statCard:nth-child(1),
+  .statCard:nth-child(2) {
+    border-bottom: 1px solid #000000;
+  }
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+  .reportsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .reportBtn {
+    width: 100%;
+    justify-content: center;
+  }
+  .analysisGrid {
+    grid-template-columns: 1fr;
+  }
+  .matchIndicator {
+    padding: 1rem 0;
+  }
+  .buttonRow {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .primaryBtn,
+  .secondaryBtn,
+  .backBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}

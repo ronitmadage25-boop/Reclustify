@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 import styles from './Nav.module.css'
 
 export default function Nav() {
+  const { session, userRole, setCurrentScreen, setAuthModalOpen, signOut } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -63,18 +65,39 @@ export default function Nav() {
             </li>
           </ul>
 
-          {/* CTA */}
-          <button
-            className={styles.ctaButton}
-            aria-label="Get Started with Reclustify (coming soon)"
-            tabIndex={0}
-            type="button"
-            disabled
-            aria-disabled="true"
-          >
-            GET STARTED
-            <span className={styles.ctaArrow} aria-hidden="true">→</span>
-          </button>
+          {/* CTA / Auth */}
+          {session ? (
+            <div className={styles.authNavGroup}>
+              <button
+                className={styles.ctaButton}
+                onClick={() => setCurrentScreen(userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard')}
+                type="button"
+                aria-label="Go to Dashboard"
+              >
+                DASHBOARD
+                <span className={styles.ctaArrow} aria-hidden="true">→</span>
+              </button>
+              <button
+                className={styles.signOutBtn}
+                onClick={signOut}
+                type="button"
+                aria-label="Sign out"
+              >
+                SIGN OUT
+              </button>
+            </div>
+          ) : (
+            <button
+              className={styles.ctaButton}
+              onClick={() => setAuthModalOpen(true)}
+              aria-label="Get Started with Reclustify"
+              tabIndex={0}
+              type="button"
+            >
+              GET STARTED
+              <span className={styles.ctaArrow} aria-hidden="true">→</span>
+            </button>
+          )}
 
           {/* Mobile Menu Toggle */}
           <button
@@ -113,14 +136,29 @@ export default function Nav() {
             </a>
           </li>
           <li>
-            <button
-              className={styles.mobileCtaButton}
-              type="button"
-              disabled
-              aria-disabled="true"
-            >
-              GET STARTED →
-            </button>
+            {session ? (
+              <button
+                className={styles.mobileCtaButton}
+                type="button"
+                onClick={() => {
+                  setCurrentScreen(userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard')
+                  setMenuOpen(false)
+                }}
+              >
+                DASHBOARD →
+              </button>
+            ) : (
+              <button
+                className={styles.mobileCtaButton}
+                type="button"
+                onClick={() => {
+                  setAuthModalOpen(true)
+                  setMenuOpen(false)
+                }}
+              >
+                GET STARTED →
+              </button>
+            )}
           </li>
         </ul>
       </div>
