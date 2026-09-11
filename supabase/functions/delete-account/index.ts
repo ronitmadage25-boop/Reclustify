@@ -113,11 +113,19 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // 5. Clear localStorage-equivalent server-side profile cache
-    //    (The profiles, student_profiles, admin_requests, complaints rows
-    //    will cascade-delete automatically when auth.users is deleted.)
+    // 5. Explicitly delete user rows from public tables before deleting auth user
+    try {
+      await supabaseAdmin.from('complaint_timeline').delete().eq('actor_id', userId)
+      await supabaseAdmin.from('complaint_attachments').delete().eq('uploader_id', userId)
+      await supabaseAdmin.from('complaints').delete().eq('user_id', userId)
+      await supabaseAdmin.from('student_profiles').delete().eq('user_id', userId)
+      await supabaseAdmin.from('admin_requests').delete().eq('user_id', userId)
+      await supabaseAdmin.from('profiles').delete().eq('id', userId)
+    } catch (tblErr) {
+      console.warn('Table cleanup warning (non-fatal, continuing to deleteUser):', tblErr)
+    }
 
-    // 6. Delete the auth user — this cascades to all profile/data tables
+    // 6. Delete the auth user — this cascades to any remaining tables
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
     if (deleteError) {

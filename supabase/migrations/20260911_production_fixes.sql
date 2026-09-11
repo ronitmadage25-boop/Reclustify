@@ -31,9 +31,15 @@ BEGIN
     RETURN json_build_object('success', false, 'error', 'Not authenticated');
   END IF;
 
-  -- The cascade chain handles data deletion automatically:
-  -- auth.users → profiles → student_profiles, admin_requests, complaints
-  -- (all have ON DELETE CASCADE)
+  -- Explicit cleanup of user data in child tables before auth.users deletion
+  DELETE FROM public.complaint_timeline WHERE actor_id = calling_user_id;
+  DELETE FROM public.complaint_attachments WHERE uploader_id = calling_user_id;
+  DELETE FROM public.complaints WHERE user_id = calling_user_id;
+  DELETE FROM public.student_profiles WHERE user_id = calling_user_id;
+  DELETE FROM public.admin_requests WHERE user_id = calling_user_id;
+  DELETE FROM public.profiles WHERE id = calling_user_id;
+
+  -- Delete from auth.users (runs with postgres superuser privileges)
   DELETE FROM auth.users WHERE id = calling_user_id;
 
   RETURN json_build_object('success', true, 'deleted_user_id', calling_user_id::text);
@@ -46,6 +52,9 @@ $$;
 -- Grant execute permission to authenticated users only
 REVOKE ALL ON FUNCTION public.delete_own_account() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.delete_own_account() TO authenticated;
+
+-- Force PostgREST to refresh its schema cache
+NOTIFY pgrst, 'reload schema';
 
 -- ============================================================
 -- FIX 2: EXPAND STATUS VALUES TO MATCH REAL LIFECYCLE

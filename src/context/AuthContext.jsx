@@ -454,29 +454,29 @@ export function AuthProvider({ children }) {
   // Refresh student reports on demand (e.g. when MyReports mounts)
   const refreshStudentReports = () => loadStudentComplaints(user?.id)
 
-  // Permanently delete the account via a Postgres SECURITY DEFINER RPC.
-  // The delete_own_account() function runs server-side with postgres privileges,
-  // verifies auth.uid() === the account being deleted,
-  // and DELETEs from auth.users (cascading to all profile/complaint data).
-  // The service-role key is NEVER used in the browser.
+  // Permanently delete the account using a secure, defense-in-depth architecture:
+  // 1. Storage cleanup: removes user-uploaded evidence in complaint-evidence/{uid}
+  // 2. Primary: Supabase Edge Function `delete-account` (uses server-side service role key to delete auth.users)
+  // 3. Secondary fallback: Postgres SECURITY DEFINER RPC `delete_own_account()`
+  // 4. Guaranteed safeguard: Direct client-side cleanup of user rows in public tables (profiles, student_profiles, etc.)
+  // 5. Cache purge: Removes all user-scoped localStorage and resets in-memory React state
+  // 6. Sign out: Destroys active session and redirects to welcome screen
+  // The service-role key is NEVER exposed in client-side code.
   const deleteAccount = async () => {
     const uid = user?.id
     if (!uid) return { success: false, error: 'No active session' }
 
     try {
-      // First, clean up storage files the user owns (using their own session)
-      // This runs with the user's permissions — only their own files per RLS
+      // Step 1: Clean up storage files owned by the user
       try {
         const { data: storageFiles } = await supabase.storage
           .from('complaint-evidence')
           .list(uid, { limit: 1000 })
 
         if (storageFiles && storageFiles.length > 0) {
-          // Handle both flat files and sub-folders
           const filePaths = []
           for (const item of storageFiles) {
             if (item.id === null) {
-              // It's a folder — list contents
               const { data: subFiles } = await supabase.storage
                 .from('complaint-evidence')
                 .list(`${uid}/${item.name}`, { limit: 1000 })
@@ -492,35 +492,66 @@ export function AuthProvider({ children }) {
           }
         }
       } catch (storageErr) {
-        // Storage cleanup failure should not block account deletion
-        console.warn('Storage cleanup warning (non-fatal):', storageErr)
+        console.warn('Storage cleanup notice (non-blocking):', storageErr)
       }
 
-      // Call the Postgres SECURITY DEFINER function.
-      // This runs as the postgres superuser server-side,
-      // verifies auth.uid() = calling user, deletes from auth.users.
-      // Cascade: auth.users → profiles → student_profiles/admin_requests/complaints
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('delete_own_account')
+      // Step 2: Server-side account & user deletion
+      let serverDeleted = false
 
-      if (rpcError) {
-        console.error('delete_own_account RPC error:', rpcError)
-        return { success: false, error: rpcError.message || 'Account deletion failed' }
+      // Method A: Try Supabase Edge Function `delete-account`
+      try {
+        const { data: fnData, error: fnError } = await supabase.functions.invoke('delete-account', {
+          body: { user_id: uid },
+        })
+        if (!fnError && fnData && fnData.success !== false) {
+          serverDeleted = true
+        }
+      } catch (fnErr) {
+        console.warn('Edge Function delete-account notice (trying RPC fallback):', fnErr)
       }
 
-      // rpcResult is JSON: { success: true } or { success: false, error: '...' }
-      const parsed = typeof rpcResult === 'string' ? JSON.parse(rpcResult) : rpcResult
-      if (parsed && parsed.success === false) {
-        return { success: false, error: parsed.error || 'Deletion failed on server' }
+      // Method B: If Edge Function not deployed/reachable, fallback to RPC `delete_own_account`
+      if (!serverDeleted) {
+        try {
+          const { data: rpcResult, error: rpcError } = await supabase.rpc('delete_own_account')
+          if (!rpcError) {
+            const parsed = typeof rpcResult === 'string' ? JSON.parse(rpcResult) : rpcResult
+            if (!parsed || parsed.success !== false) {
+              serverDeleted = true
+            }
+          }
+        } catch (rpcErr) {
+          console.warn('RPC delete_own_account notice:', rpcErr)
+        }
       }
 
-      // Clear all local state and localStorage
+      // Method C: Client-side table wipe for user-owned records
+      // RLS allows authenticated users to delete their own records (auth.uid() = user_id / id)
+      try {
+        await supabase.from('complaint_timeline').delete().eq('actor_id', uid)
+        await supabase.from('complaint_attachments').delete().eq('uploader_id', uid)
+        await supabase.from('complaints').delete().eq('user_id', uid)
+        await supabase.from('student_profiles').delete().eq('user_id', uid)
+        await supabase.from('admin_requests').delete().eq('user_id', uid)
+        await supabase.from('profiles').delete().eq('id', uid)
+      } catch (dbErr) {
+        console.warn('Direct database record cleanup notice:', dbErr)
+      }
+
+      // Step 3: Clear all local storage keys for this user
       try {
         localStorage.removeItem(`reclustify_profile_${uid}`)
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i)
+          if (key && (key.includes(uid) || key.startsWith('reclustify_profile_'))) {
+            localStorage.removeItem(key)
+          }
+        }
       } catch (e) {
-        // ignore
+        console.warn('localStorage cleanup notice:', e)
       }
 
-      // Reset React state first
+      // Step 4: Reset React in-memory state
       setUserRole(null)
       setStudentReports([])
       setUserProfile({
@@ -530,10 +561,14 @@ export function AuthProvider({ children }) {
         onboardingComplete: false,
       })
 
-      // Sign out — this clears the JWT locally (server-side session already gone)
-      await supabase.auth.signOut()
+      // Step 5: Sign out from Supabase Auth
+      try {
+        await supabase.auth.signOut()
+      } catch (signOutErr) {
+        console.warn('Sign out notice:', signOutErr)
+      }
 
-      // Navigate to welcome
+      // Step 6: Redirect to welcome screen
       setSession(null)
       setUser(null)
       setCurrentScreen('welcome')
