@@ -24,13 +24,17 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
 
     try {
       // Save to Supabase (or demo fallback)
-      const saved = await submitComplaintToDb({
-        title: activeDraft.title,
-        description: activeDraft.description,
-        category: activeDraft.category,
-        location: activeDraft.location,
-        severity: activeDraft.severity,
-      })
+      // Pass imageFile as second argument so it gets uploaded with the complaint
+      const saved = await submitComplaintToDb(
+        {
+          title: activeDraft.title,
+          description: activeDraft.description,
+          category: activeDraft.category,
+          location: activeDraft.location,
+          severity: activeDraft.severity,
+        },
+        activeDraft.imageFile || null
+      )
 
       const finalReport = {
         ...activeDraft,

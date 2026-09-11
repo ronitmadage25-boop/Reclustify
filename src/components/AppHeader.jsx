@@ -69,6 +69,15 @@ export default function AppHeader() {
                   MY REPORTS
                 </button>
               </li>
+              <li>
+                <button
+                  type="button"
+                  className={`${styles.navBtn} ${currentScreen === 'student-settings' ? styles.activeNav : ''}`}
+                  onClick={() => handleNav('student-settings')}
+                >
+                  ACCOUNT
+                </button>
+              </li>
             </ul>
           )}
 
@@ -188,6 +197,11 @@ export default function AppHeader() {
                 <li>
                   <button type="button" className={styles.mobileItem} onClick={() => handleNav('my-reports')}>
                     MY REPORTS
+                  </button>
+                </li>
+                <li>
+                  <button type="button" className={styles.mobileItem} onClick={() => handleNav('student-settings')}>
+                    ACCOUNT
                   </button>
                 </li>
               </>

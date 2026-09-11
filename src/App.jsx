@@ -32,6 +32,7 @@ import AIAnalysisPreviewScreen from './screens/AIAnalysisPreviewScreen'
 import SubmissionSuccessScreen from './screens/SubmissionSuccessScreen'
 import MyReportsScreen from './screens/MyReportsScreen'
 import ReportTrackingScreen from './screens/ReportTrackingScreen'
+import StudentSettingsScreen from './screens/StudentSettingsScreen'
 
 // Admin screens
 import AdminDashboardScreen from './screens/AdminDashboardScreen'
@@ -128,6 +129,9 @@ export default function App() {
         return <CollegeSelectionScreen />
       case 'student-details':
         return <StudentDetailsScreen />
+
+      case 'student-settings':
+        return <StudentSettingsScreen />
 
       // Admin Onboarding
       case 'admin-details':

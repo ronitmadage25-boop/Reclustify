@@ -1137,6 +1137,25 @@
   border-color: #cc2600;
 }
 
+.deleteAccountBtn {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  padding: 0.875rem;
+  background-color: transparent;
+  border: 2px solid #FF3000;
+  color: #FF3000;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.deleteAccountBtn:hover {
+  background-color: #FF3000;
+  color: #ffffff;
+}
+
 /* Global Buttons */
 .primaryBtn {
   display: inline-flex;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { fetchClusterDetails, updateClusterStatus } from '../services/db'
+import { fetchClusterDetails, updateClusterStatus, fetchComplaintAttachments } from '../services/db'
 import styles from './AdminScreens.module.css'
 
 // Fallback seed data for the demo cluster C-104 (shown when navigating from AdminDashboard)
@@ -31,6 +31,8 @@ export default function AdminIssueDetailsScreen({ clusterId = 'C-104', clusterDb
   const [currentStatus, setCurrentStatus] = useState('IN PROGRESS')
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [statusUpdated, setStatusUpdated] = useState(false)
+  // Map: complaintDbId → array of attachment objects with signedUrl
+  const [attachmentsMap, setAttachmentsMap] = useState({})
 
   useEffect(() => {
     async function load() {
@@ -59,6 +61,28 @@ export default function AdminIssueDetailsScreen({ clusterId = 'C-104', clusterDb
 
     load()
   }, [clusterDbId, clusterId])
+
+  // After complaints load, fetch attachments for each one (only real DB IDs)
+  useEffect(() => {
+    if (!complaints || complaints.length === 0) return
+
+    const fetchAll = async () => {
+      const map = {}
+      await Promise.all(
+        complaints.map(async (complaint) => {
+          if (complaint.dbId) {
+            const attachments = await fetchComplaintAttachments(complaint.dbId)
+            if (attachments.length > 0) {
+              map[complaint.dbId] = attachments
+            }
+          }
+        })
+      )
+      setAttachmentsMap(map)
+    }
+
+    fetchAll().catch(console.warn)
+  }, [complaints])
 
   const handleUpdateStatus = async (newStatus) => {
     if (statusUpdating) return
@@ -144,6 +168,45 @@ export default function AdminIssueDetailsScreen({ clusterId = 'C-104', clusterDb
                   </div>
                   <p className={styles.convergedText}>{item.text}</p>
                   <div className={styles.convergedTime}>{item.time}</div>
+
+                  {/* Evidence / Attached Photo */}
+                  {item.dbId && (() => {
+                    const attachments = attachmentsMap[item.dbId]
+                    if (!attachments || attachments.length === 0) {
+                      return (
+                        <div style={{
+                          marginTop: '10px', padding: '8px 12px',
+                          backgroundColor: '#F5F5F5', border: '1px solid #E0E0E0',
+                          fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', color: '#999',
+                        }}>
+                          NO EVIDENCE ATTACHED
+                        </div>
+                      )
+                    }
+                    return (
+                      <div style={{ marginTop: '10px' }}>
+                        <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', color: '#FF3000', marginBottom: '6px' }}>
+                          EVIDENCE / ATTACHED PHOTO ({attachments.length})
+                        </div>
+                        {attachments.map((att) => (
+                          <div key={att.id} style={{ border: '1px solid #000', marginBottom: '6px' }}>
+                            <img
+                              src={att.signedUrl}
+                              alt={`Evidence: ${att.fileName}`}
+                              style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }}
+                              onError={(e) => { e.currentTarget.style.display = 'none' }}
+                            />
+                            <div style={{
+                              padding: '6px 10px', backgroundColor: '#000', color: '#fff',
+                              fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em',
+                            }}>
+                              {att.fileName} · {(att.fileSize / 1024).toFixed(0)} KB
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })()}
                 </div>
               ))}
             </div>

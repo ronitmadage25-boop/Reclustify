@@ -690,3 +690,114 @@ function formatRelativeTime(isoString) {
   if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`
   return 'Just now'
 }
+
+// ============================================================================
+// COMPLAINT ATTACHMENTS (IMAGE UPLOAD)
+// ============================================================================
+
+/**
+ * Uploads a complaint evidence image to Supabase Storage.
+ * Path: complaint-evidence/{userId}/{complaintId}/{sanitized-filename}
+ * Returns the storage path on success, or null on failure.
+ */
+export async function uploadComplaintImage(userId, complaintId, file) {
+  if (!userId || !complaintId || !file) return null
+  if (userId.startsWith('google-eval-')) return null
+
+  try {
+    // Sanitize filename: strip special chars, keep extension
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const safeName = `evidence_${Date.now()}.${ext}`
+    const storagePath = `${userId}/${complaintId}/${safeName}`
+
+    const { error } = await supabase.storage
+      .from('complaint-evidence')
+      .upload(storagePath, file, {
+        contentType: file.type,
+        upsert: false,
+      })
+
+    if (error) {
+      console.warn('Error uploading complaint image:', error)
+      return null
+    }
+
+    return { storagePath, safeName }
+  } catch (err) {
+    console.error('uploadComplaintImage exception:', err)
+    return null
+  }
+}
+
+/**
+ * Saves complaint attachment metadata to the complaint_attachments table.
+ */
+export async function saveComplaintAttachment(complaintId, userId, storagePath, fileName, mimeType, fileSize) {
+  if (!complaintId || !userId || !storagePath) return null
+
+  try {
+    const { data, error } = await supabase
+      .from('complaint_attachments')
+      .insert({
+        complaint_id: complaintId,
+        uploaded_by: userId,
+        storage_path: storagePath,
+        file_name: fileName,
+        mime_type: mimeType,
+        file_size: fileSize,
+      })
+      .select()
+      .maybeSingle()
+
+    if (error) {
+      console.warn('Error saving complaint attachment record:', error)
+      return null
+    }
+
+    return data
+  } catch (err) {
+    console.error('saveComplaintAttachment exception:', err)
+    return null
+  }
+}
+
+/**
+ * Fetches complaint attachments and generates signed URLs (valid 1 hour).
+ * Returns an array of { id, fileName, mimeType, fileSize, signedUrl, createdAt }.
+ */
+export async function fetchComplaintAttachments(complaintId) {
+  if (!complaintId) return []
+
+  try {
+    const { data, error } = await supabase
+      .from('complaint_attachments')
+      .select('*')
+      .eq('complaint_id', complaintId)
+      .order('created_at', { ascending: true })
+
+    if (error || !data || data.length === 0) return []
+
+    // Generate a signed URL for each file (1-hour expiry)
+    const results = await Promise.all(
+      data.map(async (attachment) => {
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from('complaint-evidence')
+          .createSignedUrl(attachment.storage_path, 3600)
+
+        return {
+          id: attachment.id,
+          fileName: attachment.file_name,
+          mimeType: attachment.mime_type,
+          fileSize: attachment.file_size,
+          signedUrl: signedError ? null : signedData?.signedUrl,
+          createdAt: attachment.created_at,
+        }
+      })
+    )
+
+    return results.filter((r) => r.signedUrl !== null)
+  } catch (err) {
+    console.error('fetchComplaintAttachments exception:', err)
+    return []
+  }
+}

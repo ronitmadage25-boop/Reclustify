@@ -8,6 +8,8 @@ import {
   verifyAdminSecurityCode,
   submitComplaint,
   fetchStudentComplaints,
+  uploadComplaintImage,
+  saveComplaintAttachment,
 } from '../services/db'
 
 const AuthContext = createContext(null)
@@ -400,8 +402,8 @@ export function AuthProvider({ children }) {
     }
   }, [user?.id])
 
-  // Submit a complaint to Supabase and refresh the list
-  const submitComplaintToDb = async (complaintData) => {
+  // Submit a complaint to Supabase and optionally upload an evidence image
+  const submitComplaintToDb = async (complaintData, imageFile = null) => {
     const uid = user?.id
     const instId = userProfile?.collegeId
     const saved = await submitComplaint(uid, instId, complaintData)
@@ -421,6 +423,26 @@ export function AuthProvider({ children }) {
         createdAt: new Date().toISOString(),
       }
       setStudentReports((prev) => [optimistic, ...prev])
+
+      // If an image was selected, upload it and save the attachment record
+      if (imageFile && saved.id && uid && !uid.startsWith('google-eval-')) {
+        try {
+          const uploaded = await uploadComplaintImage(uid, saved.id, imageFile)
+          if (uploaded) {
+            await saveComplaintAttachment(
+              saved.id,
+              uid,
+              uploaded.storagePath,
+              imageFile.name,
+              imageFile.type,
+              imageFile.size
+            )
+          }
+        } catch (imgErr) {
+          console.warn('Image upload failed (complaint still saved):', imgErr)
+        }
+      }
+
       // Refresh from DB in background
       if (uid && !uid.startsWith('google-eval-')) {
         loadStudentComplaints(uid)
@@ -431,6 +453,69 @@ export function AuthProvider({ children }) {
 
   // Refresh student reports on demand (e.g. when MyReports mounts)
   const refreshStudentReports = () => loadStudentComplaints(user?.id)
+
+  // Permanently delete the account via the secure Edge Function.
+  // The Edge Function verifies the JWT, deletes storage files, then
+  // calls auth.admin.deleteUser() server-side (service-role key never in browser).
+  const deleteAccount = async () => {
+    const uid = user?.id
+    if (!uid) return { success: false, error: 'No active session' }
+
+    try {
+      // Get the current session JWT to authenticate the Edge Function call
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (!currentSession?.access_token) {
+        return { success: false, error: 'No active session token' }
+      }
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const edgeFunctionUrl = `${supabaseUrl}/functions/v1/delete-account`
+
+      const response = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // The Edge Function verifies this JWT server-side
+          'Authorization': `Bearer ${currentSession.access_token}`,
+        },
+        body: JSON.stringify({ user_id: uid }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        return { success: false, error: result.error || 'Deletion failed' }
+      }
+
+      // Clear all local state and localStorage
+      try {
+        localStorage.removeItem(`reclustify_profile_${uid}`)
+      } catch (e) {
+        // ignore
+      }
+
+      // Sign out locally (session is already invalidated server-side)
+      setSession(null)
+      setUser(null)
+      setUserRole(null)
+      setCurrentScreen('welcome')
+      setUserProfile({
+        college: '',
+        studentDetails: { name: '', id: '', dept: '', year: '' },
+        adminDetails: { name: '', staffId: '', email: '', dept: '', designation: '', office: '', proofName: '', code: '' },
+        onboardingComplete: false,
+      })
+      setStudentReports([])
+
+      // Force Supabase to clear its local session
+      await supabase.auth.signOut()
+
+      return { success: true }
+    } catch (err) {
+      console.error('deleteAccount error:', err)
+      return { success: false, error: err.message || 'Network error during deletion' }
+    }
+  }
 
   const value = {
     session,
@@ -456,6 +541,7 @@ export function AuthProvider({ children }) {
     reportsLoading,
     submitComplaintToDb,
     refreshStudentReports,
+    deleteAccount,
     activeTrackingReport,
     setActiveTrackingReport,
   }
