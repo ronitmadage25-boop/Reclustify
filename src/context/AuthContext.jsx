@@ -1,5 +1,14 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import {
+  fetchExistingOnboarding,
+  upsertUserProfile,
+  saveStudentOnboardingData,
+  saveAdminRequestData,
+  verifyAdminSecurityCode,
+  submitComplaint,
+  fetchStudentComplaints,
+} from '../services/db'
 
 const AuthContext = createContext(null)
 
@@ -21,29 +30,9 @@ export function AuthProvider({ children }) {
     onboardingComplete: false,
   })
 
-  // Student reports state
-  const [studentReports, setStudentReports] = useState([
-    {
-      id: 'REP-4091',
-      clusterId: 'CLU-104',
-      title: 'Lab 3 Wi-Fi dropping connection during practical sessions',
-      location: 'Science Block, Lab 3',
-      category: 'IT & NETWORK',
-      submittedAt: '2 days ago',
-      status: 'IN PROGRESS',
-      severity: 'HIGH',
-    },
-    {
-      id: 'REP-3904',
-      clusterId: 'CLU-088',
-      title: 'Water filter leaking on 2nd floor corridor',
-      location: 'Engineering Wing, 2nd Floor',
-      category: 'FACILITIES',
-      submittedAt: '5 days ago',
-      status: 'RESOLVED',
-      severity: 'MEDIUM',
-    }
-  ])
+  // Student reports state — populated from Supabase
+  const [studentReports, setStudentReports] = useState([])
+  const [reportsLoading, setReportsLoading] = useState(false)
 
   // Active report for status tracking screen
   const [activeTrackingReport, setActiveTrackingReport] = useState(null)
@@ -117,36 +106,110 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // Helper to load user profile from storage or Google metadata
-  const loadUserProfile = (authUser) => {
+  // Helper to load user profile from storage, Google metadata, and Supabase PostgreSQL
+  async function loadUserProfile(authUser) {
+    if (!authUser) return
+
+    const googleName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || ''
+    const googleEmail = authUser.email || ''
+
+    // 1. Optimistic load from local storage
+    let loadedFromLocal = false
     try {
       const saved = localStorage.getItem(`reclustify_profile_${authUser.id}`)
       if (saved) {
         const parsed = JSON.parse(saved)
         setUserRole(parsed.role || null)
         setUserProfile(parsed)
+        loadedFromLocal = true
         if (parsed.onboardingComplete) {
           setCurrentScreen(parsed.role === 'admin' ? 'admin-dashboard' : 'student-dashboard')
         } else {
-          setCurrentScreen(parsed.role ? (parsed.role === 'admin' ? 'admin-details' : 'college-selection') : 'role-selection')
+          setCurrentScreen(parsed.role ? (parsed.role === 'admin' ? (parsed.adminDetails?.code ? 'admin-enter-code' : 'admin-details') : 'college-selection') : 'role-selection')
         }
-        return
       }
     } catch (e) {
       console.warn('Error reading stored profile:', e)
     }
 
-    // Default pre-fill from Google account metadata
-    const googleName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || ''
-    const googleEmail = authUser.email || ''
+    if (!loadedFromLocal) {
+      setUserProfile((prev) => ({
+        ...prev,
+        studentDetails: { ...prev.studentDetails, name: googleName },
+        adminDetails: { ...prev.adminDetails, name: googleName, email: googleEmail },
+      }))
+      setCurrentScreen('role-selection')
+    }
 
-    setUserProfile((prev) => ({
-      ...prev,
-      studentDetails: { ...prev.studentDetails, name: googleName },
-      adminDetails: { ...prev.adminDetails, name: googleName, email: googleEmail },
-    }))
 
-    setCurrentScreen('role-selection')
+    // 2. Query persistent Supabase PostgreSQL database
+    try {
+      const remoteData = await fetchExistingOnboarding(authUser.id)
+      if (remoteData?.profile) {
+        const { profile, studentProfile, adminRequest } = remoteData
+        const role = profile.role || null
+        const isComplete = profile.onboarding_complete || false
+
+        const mergedProfile = {
+          college: profile.institution?.name || userProfile.college || '',
+          collegeCode: profile.institution?.code || userProfile.collegeCode || '',
+          collegeId: profile.institution_id || userProfile.collegeId || '',
+          role,
+          onboardingComplete: isComplete,
+          studentDetails: {
+            name: studentProfile?.enrollment_number ? (profile.full_name || googleName) : (userProfile.studentDetails?.name || googleName),
+            id: studentProfile?.enrollment_number || userProfile.studentDetails?.id || '',
+            dept: studentProfile?.branch || userProfile.studentDetails?.dept || '',
+            year: studentProfile?.graduation_year || userProfile.studentDetails?.year || '',
+          },
+          adminDetails: {
+            name: adminRequest?.full_name || profile.full_name || userProfile.adminDetails?.name || googleName,
+            email: adminRequest?.email || profile.email || googleEmail,
+            staffId: adminRequest?.staff_id || userProfile.adminDetails?.staffId || '',
+            dept: adminRequest?.department || userProfile.adminDetails?.dept || '',
+            designation: adminRequest?.designation || userProfile.adminDetails?.designation || '',
+            office: adminRequest?.office_location || userProfile.adminDetails?.office || '',
+            phone: adminRequest?.contact_number || userProfile.adminDetails?.phone || '',
+            scope: adminRequest?.jurisdiction_scope || userProfile.adminDetails?.scope || '',
+            proofName: adminRequest?.proof_document || userProfile.adminDetails?.proofName || '',
+            code: adminRequest?.institution_code || userProfile.adminDetails?.code || '',
+            reason: adminRequest?.reason || userProfile.adminDetails?.reason || '',
+            domain: adminRequest?.domain || userProfile.adminDetails?.domain || '',
+            status: adminRequest?.status || 'pending',
+          },
+        }
+
+        setUserRole(role)
+        setUserProfile(mergedProfile)
+        try {
+          localStorage.setItem(`reclustify_profile_${authUser.id}`, JSON.stringify(mergedProfile))
+        } catch (err) {
+          console.warn('Could not cache merged profile:', err)
+        }
+
+        if (isComplete) {
+          setCurrentScreen(role === 'admin' ? 'admin-dashboard' : 'student-dashboard')
+          // Load student complaints after profile confirms student role
+          if (role === 'student' && !authUser.id.startsWith('google-eval-')) {
+            fetchStudentComplaints(authUser.id).then(setStudentReports).catch(() => {})
+          }
+        } else if (adminRequest && adminRequest.status === 'pending') {
+          setCurrentScreen('admin-enter-code')
+        } else if (role === 'student' && studentProfile) {
+          setCurrentScreen('student-dashboard')
+        } else if (role) {
+          setCurrentScreen(role === 'admin' ? 'admin-details' : 'college-selection')
+        }
+      } else {
+        // Upsert basic user record in profiles table
+        await upsertUserProfile(authUser.id, {
+          full_name: googleName,
+          email: googleEmail,
+        })
+      }
+    } catch (err) {
+      console.warn('Could not sync profile with Supabase backend:', err)
+    }
   }
 
   // Save profile helper
@@ -157,13 +220,114 @@ export function AuthProvider({ children }) {
     if (updatedRole !== undefined) {
       setUserRole(updatedRole)
     }
-    if (user?.id) {
+    const currentUserId = user?.id
+    if (currentUserId) {
       try {
-        localStorage.setItem(`reclustify_profile_${user.id}`, JSON.stringify(dataToSave))
+        localStorage.setItem(`reclustify_profile_${currentUserId}`, JSON.stringify(dataToSave))
       } catch (e) {
         console.warn('Could not persist profile:', e)
       }
+      // Async sync to Supabase
+      upsertUserProfile(currentUserId, {
+        role: roleToSave,
+        onboarding_complete: dataToSave.onboardingComplete || false,
+        full_name: dataToSave.studentDetails?.name || dataToSave.adminDetails?.name || undefined,
+      }).catch((e) => console.warn('Could not sync profile update to DB:', e))
     }
+  }
+
+  // Dedicated Student Onboarding Persistence
+  const saveStudentOnboarding = async (studentDetails) => {
+    const currentUserId = user?.id
+    const updated = {
+      ...userProfile,
+      role: 'student',
+      studentDetails,
+      onboardingComplete: true,
+    }
+    setUserProfile(updated)
+    setUserRole('student')
+
+    if (currentUserId) {
+      try {
+        localStorage.setItem(`reclustify_profile_${currentUserId}`, JSON.stringify(updated))
+      } catch (e) {
+        console.warn('Could not persist to local storage:', e)
+      }
+
+      await saveStudentOnboardingData(currentUserId, {
+        institutionId: userProfile.collegeId,
+        studentDetails,
+        collegeName: userProfile.college,
+        collegeCode: userProfile.collegeCode,
+      })
+    }
+
+    setCurrentScreen('student-dashboard')
+  }
+
+  // Dedicated Admin Onboarding Request Persistence
+  const saveAdminOnboarding = async (additionalAdminDetails = {}) => {
+    const currentUserId = user?.id
+    const mergedAdminDetails = {
+      ...userProfile.adminDetails,
+      ...additionalAdminDetails,
+    }
+
+    const updated = {
+      ...userProfile,
+      role: 'admin',
+      adminDetails: mergedAdminDetails,
+    }
+    setUserProfile(updated)
+    setUserRole('admin')
+
+    if (currentUserId) {
+      try {
+        localStorage.setItem(`reclustify_profile_${currentUserId}`, JSON.stringify(updated))
+      } catch (e) {
+        console.warn('Could not persist to local storage:', e)
+      }
+
+      await saveAdminRequestData(currentUserId, {
+        adminDetails: mergedAdminDetails,
+        collegeName: userProfile.college,
+        collegeCode: userProfile.collegeCode,
+        institutionId: userProfile.collegeId,
+      })
+    }
+
+    setCurrentScreen('admin-request-submitted')
+  }
+
+  // Dedicated Admin Verification Code Confirmation
+  const verifyAdminCode = async (enteredCode) => {
+    const currentUserId = user?.id
+    const res = await verifyAdminSecurityCode(currentUserId, enteredCode)
+
+    if (res.verified) {
+      const updated = {
+        ...userProfile,
+        adminDetails: {
+          ...userProfile.adminDetails,
+          code: enteredCode,
+          status: 'verified',
+        },
+        onboardingComplete: true,
+      }
+      setUserProfile(updated)
+      if (currentUserId) {
+        try {
+          localStorage.setItem(`reclustify_profile_${currentUserId}`, JSON.stringify(updated))
+        } catch (e) {
+          console.warn('Could not persist to local storage:', e)
+        }
+      }
+      setCurrentScreen('admin-dashboard')
+      return { success: true }
+    }
+
+    return { success: false, error: res.error || 'Verification code does not match.' }
   }
 
   // Helper to determine OAuth redirect URL
@@ -223,10 +387,50 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Add a new student report
-  const addStudentReport = (newReport) => {
-    setStudentReports((prev) => [newReport, ...prev])
+  // Load student complaints from Supabase
+  const loadStudentComplaints = useCallback(async (uid) => {
+    const id = uid || user?.id
+    if (!id || id.startsWith('google-eval-')) return
+    setReportsLoading(true)
+    try {
+      const data = await fetchStudentComplaints(id)
+      setStudentReports(data)
+    } finally {
+      setReportsLoading(false)
+    }
+  }, [user?.id])
+
+  // Submit a complaint to Supabase and refresh the list
+  const submitComplaintToDb = async (complaintData) => {
+    const uid = user?.id
+    const instId = userProfile?.collegeId
+    const saved = await submitComplaint(uid, instId, complaintData)
+    if (saved) {
+      // Optimistically prepend while we refresh from DB
+      const optimistic = {
+        id: saved.ticket_number || complaintData.id,
+        dbId: saved.id,
+        clusterId: saved.clusterKey || 'C-NEW',
+        clusterTitle: saved.clusterTitle || complaintData.title,
+        title: complaintData.title,
+        location: complaintData.location,
+        category: complaintData.category,
+        severity: complaintData.severity,
+        status: 'IN PROGRESS',
+        submittedAt: 'Just now',
+        createdAt: new Date().toISOString(),
+      }
+      setStudentReports((prev) => [optimistic, ...prev])
+      // Refresh from DB in background
+      if (uid && !uid.startsWith('google-eval-')) {
+        loadStudentComplaints(uid)
+      }
+    }
+    return saved
   }
+
+  // Refresh student reports on demand (e.g. when MyReports mounts)
+  const refreshStudentReports = () => loadStudentComplaints(user?.id)
 
   const value = {
     session,
@@ -243,10 +447,15 @@ export function AuthProvider({ children }) {
     setCurrentScreen,
     userProfile,
     saveProfile,
+    saveStudentOnboarding,
+    saveAdminOnboarding,
+    verifyAdminCode,
     signInWithGoogle,
     signOut,
     studentReports,
-    addStudentReport,
+    reportsLoading,
+    submitComplaintToDb,
+    refreshStudentReports,
     activeTrackingReport,
     setActiveTrackingReport,
   }

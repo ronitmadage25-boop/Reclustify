@@ -3,8 +3,9 @@ import { useAuth } from '../context/AuthContext'
 import styles from './StudentScreens.module.css'
 
 export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
-  const { setCurrentScreen, addStudentReport } = useAuth()
+  const { setCurrentScreen, submitComplaintToDb } = useAuth()
   const [clustering, setClustering] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const activeDraft = draftReport || {
     id: 'REP-4091',
@@ -17,22 +18,38 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
     status: 'IN PROGRESS',
   }
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setClustering(true)
-    setTimeout(() => {
+    setSaveError('')
+
+    try {
+      // Save to Supabase (or demo fallback)
+      const saved = await submitComplaintToDb({
+        title: activeDraft.title,
+        description: activeDraft.description,
+        category: activeDraft.category,
+        location: activeDraft.location,
+        severity: activeDraft.severity,
+      })
+
       const finalReport = {
         ...activeDraft,
-        clusterId: 'CLU-104',
-        clusterTitle: 'LAB 3 WI-FI CONNECTIVITY & DROPOUTS',
+        id: saved?.ticket_number || activeDraft.id,
+        clusterId: saved?.clusterKey || 'C-104',
+        clusterTitle: saved?.clusterTitle || 'LAB 3 WI-FI CONNECTIVITY & DROPOUTS',
       }
-      addStudentReport(finalReport)
-      setClustering(false)
+
       if (onConfirm) {
         onConfirm(finalReport)
       } else {
         setCurrentScreen('submission-success')
       }
-    }, 600)
+    } catch (err) {
+      console.error('Error confirming complaint:', err)
+      setSaveError('Could not save report. Please try again.')
+    } finally {
+      setClustering(false)
+    }
   }
 
   return (
@@ -55,7 +72,7 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
             <span className={styles.titleAccent}>CLUSTER MATCHED.</span>
           </h2>
           <p className={styles.formSubtitle}>
-            Reclustify compared your report against 14 active campus problem signals. Instead of opening an isolated ticket, your complaint has been grouped with related student reports.
+            Reclustify compared your report against active campus problem signals. Instead of opening an isolated ticket, your complaint has been grouped with related student reports.
           </p>
 
           {/* Analysis Comparison Card */}
@@ -81,16 +98,16 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
             {/* Destination Cluster */}
             <div className={`${styles.analysisBox} ${styles.matchedClusterBox}`}>
               <div className={styles.clusterBadgeRow}>
-                <span className={styles.clusterId}>CLUSTER #C-104</span>
+                <span className={styles.clusterId}>CLUSTER MATCH</span>
                 <span className={`${styles.badge} ${styles.badgeHigh}`}>HIGH PRIORITY</span>
               </div>
-              <h4 className={styles.boxTitle}>LAB 3 WI-FI CONNECTIVITY & DROPOUTS</h4>
+              <h4 className={styles.boxTitle}>{activeDraft.category} CLUSTER</h4>
               <p className={styles.boxDesc}>
-                4 related student complaints identified in this room over 48 hours.
+                Related student complaints identified in this category. Your report will join or form a cluster for escalation.
               </p>
               <div className={styles.boxMeta}>
-                <span>ASSIGNED TO: IT INFRASTRUCTURE</span>
-                <span>PRIORITY SCORE: 82/100</span>
+                <span>CATEGORY: {activeDraft.category}</span>
+                <span>CLUSTER ALGORITHM: ACTIVE</span>
               </div>
             </div>
           </div>
@@ -99,9 +116,11 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
           <div className={styles.systemCallout}>
             <span className={styles.calloutTitle}>WHY THIS MATTERS</span>
             <p className={styles.calloutText}>
-              By clustering your report into #C-104, its institutional priority increases immediately. Campus IT will receive a consolidated problem brief instead of duplicate disjointed emails.
+              By clustering your report, its institutional priority increases immediately. Campus staff will receive a consolidated problem brief instead of duplicate disjointed emails.
             </p>
           </div>
+
+          {saveError && <div className={styles.formError}>{saveError}</div>}
 
           <div className={styles.buttonRow}>
             <button
@@ -118,7 +137,7 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
               onClick={handleConfirm}
               disabled={clustering}
             >
-              {clustering ? 'RECLUSTERING...' : 'CONFIRM & JOIN CLUSTER →'}
+              {clustering ? 'SAVING TO CAMPUS SYSTEM...' : 'CONFIRM & JOIN CLUSTER →'}
             </button>
           </div>
         </div>

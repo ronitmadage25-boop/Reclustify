@@ -1,10 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import styles from './StudentScreens.module.css'
 
 export default function MyReportsScreen() {
-  const { studentReports, setCurrentScreen, setActiveTrackingReport } = useAuth()
+  const { studentReports, reportsLoading, refreshStudentReports, setCurrentScreen, setActiveTrackingReport } = useAuth()
   const [filter, setFilter] = useState('ALL')
+
+  // Refresh complaints from Supabase when this screen mounts
+  useEffect(() => {
+    refreshStudentReports()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredReports = studentReports.filter((rep) => {
     if (filter === 'ALL') return true
@@ -58,44 +63,79 @@ export default function MyReportsScreen() {
         <span className={styles.filterCount}>SHOWING {filteredReports.length} REPORTS</span>
       </div>
 
-      {/* Reports Grid */}
-      <div className={styles.reportsGrid}>
-        {filteredReports.map((report) => (
-          <div key={report.id} className={styles.detailedReportCard}>
-            <div className={styles.reportCardHeader}>
-              <div className={styles.reportCardIds}>
-                <span className={styles.reportId}>{report.id}</span>
-                <span className={styles.clusterIdBadge}>CLUSTER #{report.clusterId || 'C-104'}</span>
-              </div>
-              <span className={`${styles.badge} ${report.status === 'RESOLVED' ? styles.badgeResolved : styles.badgeProgress}`}>
-                {report.status}
+      {/* Loading State */}
+      {reportsLoading && (
+        <div className={styles.reportsGrid}>
+          {[1, 2].map((i) => (
+            <div key={i} className={styles.detailedReportCard} style={{ opacity: 0.5, minHeight: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '11px', letterSpacing: '0.1em', fontWeight: 700, color: '#999' }}>
+                LOADING REPORTS...
               </span>
             </div>
+          ))}
+        </div>
+      )}
 
-            <h3 className={styles.detailedReportTitle}>{report.title}</h3>
-            <p className={styles.detailedReportLoc}>LOCATION: {report.location}</p>
-
-            <div className={styles.metaRow}>
-              <span>CATEGORY: {report.category}</span>
-              <span>SUBMITTED: {report.submittedAt}</span>
-              <span>SEVERITY: {report.severity}</span>
-            </div>
-
-            <div className={styles.detailedReportFooter}>
-              <span className={styles.clusterNotice}>
-                Part of a multi-student cluster
-              </span>
-              <button
-                type="button"
-                className={styles.primaryBtnSm}
-                onClick={() => handleTrack(report)}
-              >
-                OPEN PIPELINE TRACKER →
-              </button>
-            </div>
+      {/* Empty State */}
+      {!reportsLoading && filteredReports.length === 0 && (
+        <div style={{ padding: '64px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.12em', color: '#FF3000', marginBottom: '16px', border: '1px solid #000', display: 'inline-block', padding: '6px 14px' }}>
+            NO REPORTS FILED
           </div>
-        ))}
-      </div>
+          <p style={{ fontSize: '14px', color: '#666', marginTop: '12px' }}>
+            You have not submitted any campus problem reports yet.
+          </p>
+          <button
+            type="button"
+            className={styles.primaryBtn}
+            style={{ marginTop: '24px' }}
+            onClick={() => setCurrentScreen('report-problem')}
+          >
+            REPORT YOUR FIRST PROBLEM →
+          </button>
+        </div>
+      )}
+
+      {/* Reports Grid */}
+      {!reportsLoading && filteredReports.length > 0 && (
+        <div className={styles.reportsGrid}>
+          {filteredReports.map((report) => (
+            <div key={report.id} className={styles.detailedReportCard}>
+              <div className={styles.reportCardHeader}>
+                <div className={styles.reportCardIds}>
+                  <span className={styles.reportId}>{report.id}</span>
+                  <span className={styles.clusterIdBadge}>CLUSTER #{report.clusterId || 'C-???'}</span>
+                </div>
+                <span className={`${styles.badge} ${report.status === 'RESOLVED' ? styles.badgeResolved : styles.badgeProgress}`}>
+                  {report.status}
+                </span>
+              </div>
+
+              <h3 className={styles.detailedReportTitle}>{report.title}</h3>
+              <p className={styles.detailedReportLoc}>LOCATION: {report.location}</p>
+
+              <div className={styles.metaRow}>
+                <span>CATEGORY: {report.category}</span>
+                <span>SUBMITTED: {report.submittedAt}</span>
+                <span>SEVERITY: {report.severity}</span>
+              </div>
+
+              <div className={styles.detailedReportFooter}>
+                <span className={styles.clusterNotice}>
+                  {report.department ? `DEPT: ${report.department}` : 'Part of a multi-student cluster'}
+                </span>
+                <button
+                  type="button"
+                  className={styles.primaryBtnSm}
+                  onClick={() => handleTrack(report)}
+                >
+                  OPEN PIPELINE TRACKER →
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

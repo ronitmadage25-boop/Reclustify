@@ -1,31 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { fetchInstitutions, FALLBACK_INSTITUTIONS } from '../services/db'
 import styles from './FlowScreens.module.css'
-
-const COLLEGES = [
-  { id: 'mit', name: 'Massachusetts Institute of Technology', code: 'MIT', city: 'Cambridge, MA', activeClusters: 14 },
-  { id: 'stanford', name: 'Stanford University', code: 'STANFORD', city: 'Stanford, CA', activeClusters: 19 },
-  { id: 'harvard', name: 'Harvard University', code: 'HARVARD', city: 'Cambridge, MA', activeClusters: 11 },
-  { id: 'berkeley', name: 'UC Berkeley', code: 'UCB', city: 'Berkeley, CA', activeClusters: 23 },
-  { id: 'iitb', name: 'Indian Institute of Technology Bombay', code: 'IITB', city: 'Mumbai, IN', activeClusters: 16 },
-  { id: 'oxford', name: 'University of Oxford', code: 'OXON', city: 'Oxford, UK', activeClusters: 8 },
-  { id: 'uw', name: 'University of Washington', code: 'UW', city: 'Seattle, WA', activeClusters: 15 },
-  { id: 'cmu', name: 'Carnegie Mellon University', code: 'CMU', city: 'Pittsburgh, PA', activeClusters: 12 },
-]
 
 export default function CollegeSelectionScreen() {
   const { userProfile, saveProfile, setCurrentScreen } = useAuth()
+  const [colleges, setColleges] = useState(FALLBACK_INSTITUTIONS)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedId, setSelectedId] = useState(userProfile.collegeId || 'mit')
+  const [selectedId, setSelectedId] = useState(userProfile.collegeId || FALLBACK_INSTITUTIONS[0].id)
 
-  const filtered = COLLEGES.filter((c) =>
+  useEffect(() => {
+    let mounted = true
+    fetchInstitutions().then((data) => {
+      if (mounted && data?.length) {
+        setColleges(data)
+        if (!userProfile.collegeId) {
+          setSelectedId(data[0].id)
+        }
+      }
+    })
+    return () => {
+      mounted = false
+    }
+  }, [userProfile.collegeId])
+
+  const filtered = colleges.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.city.toLowerCase().includes(searchTerm.toLowerCase())
+    (c.city && c.city.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
   const handleContinue = () => {
-    const chosen = COLLEGES.find((c) => c.id === selectedId) || COLLEGES[0]
+    const chosen = colleges.find((c) => c.id === selectedId) || colleges[0]
     saveProfile({
       ...userProfile,
       college: chosen.name,

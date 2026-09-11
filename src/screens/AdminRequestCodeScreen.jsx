@@ -1,25 +1,54 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { fetchInstitutions, FALLBACK_INSTITUTIONS } from '../services/db'
 import styles from './FlowScreens.module.css'
 
 export default function AdminRequestCodeScreen() {
-  const { userProfile, saveProfile, setCurrentScreen } = useAuth()
-  const [collegeName, setCollegeName] = useState(userProfile.college || 'Massachusetts Institute of Technology')
-  const [domain, setDomain] = useState('mit.edu')
-  const [reason, setReason] = useState('Campus Infrastructure & Network Reliability Lead for Student Labs')
+  const { userProfile, saveAdminOnboarding, setCurrentScreen } = useAuth()
+  const [institutions, setInstitutions] = useState(FALLBACK_INSTITUTIONS)
+  const [collegeName, setCollegeName] = useState(userProfile.college || FALLBACK_INSTITUTIONS[0].name)
+  const [domain, setDomain] = useState(userProfile.adminDetails?.domain || 'mit.edu')
+  const [reason, setReason] = useState(userProfile.adminDetails?.reason || 'Campus Infrastructure & Network Reliability Lead for Student Labs')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmitRequest = (e) => {
+  useEffect(() => {
+    let mounted = true
+    fetchInstitutions().then((data) => {
+      if (mounted && data?.length) {
+        setInstitutions(data)
+      }
+    })
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const handleCollegeChange = (name) => {
+    setCollegeName(name)
+    const inst = institutions.find((i) => i.name === name)
+    if (inst?.domain) {
+      setDomain(inst.domain)
+    }
+  }
+
+  const handleSubmitRequest = async (e) => {
     e.preventDefault()
-    saveProfile({
-      ...userProfile,
-      college: collegeName,
-      adminDetails: {
-        ...userProfile.adminDetails,
+    try {
+      setIsSubmitting(true)
+      const selectedInst = institutions.find((i) => i.name === collegeName)
+      await saveAdminOnboarding({
         domain,
         reason,
-      },
-    })
-    setCurrentScreen('admin-request-submitted')
+        college: collegeName,
+        collegeCode: selectedInst?.code || 'CAMPUS',
+        institutionId: selectedInst?.id || null,
+      })
+    } catch (err) {
+      console.error('Error submitting admin request:', err)
+      setCurrentScreen('admin-request-submitted')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -51,14 +80,13 @@ export default function AdminRequestCodeScreen() {
               <select
                 className={styles.select}
                 value={collegeName}
-                onChange={(e) => setCollegeName(e.target.value)}
+                onChange={(e) => handleCollegeChange(e.target.value)}
               >
-                <option value="Massachusetts Institute of Technology">Massachusetts Institute of Technology</option>
-                <option value="Stanford University">Stanford University</option>
-                <option value="Harvard University">Harvard University</option>
-                <option value="UC Berkeley">UC Berkeley</option>
-                <option value="Indian Institute of Technology Bombay">Indian Institute of Technology Bombay</option>
-                <option value="University of Oxford">University of Oxford</option>
+                {institutions.map((inst) => (
+                  <option key={inst.id} value={inst.name}>
+                    {inst.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -109,8 +137,9 @@ export default function AdminRequestCodeScreen() {
             <button
               type="submit"
               className={styles.primaryBtn}
+              disabled={isSubmitting}
             >
-              SUBMIT VERIFICATION REQUEST →
+              {isSubmitting ? 'PERSISTING REQUEST...' : 'SUBMIT VERIFICATION REQUEST →'}
             </button>
           </div>
         </form>

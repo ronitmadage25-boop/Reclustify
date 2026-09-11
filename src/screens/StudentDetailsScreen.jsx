@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import styles from './FlowScreens.module.css'
 
 export default function StudentDetailsScreen() {
-  const { user, userProfile, saveProfile, setCurrentScreen } = useAuth()
+  const { user, userProfile, saveStudentOnboarding, setCurrentScreen } = useAuth()
 
   const defaultName = userProfile.studentDetails?.name || user?.user_metadata?.full_name || user?.user_metadata?.name || ''
   const [name, setName] = useState(defaultName)
@@ -11,26 +11,32 @@ export default function StudentDetailsScreen() {
   const [department, setDepartment] = useState(userProfile.studentDetails?.dept || 'Computer Science & Engineering')
   const [year, setYear] = useState(userProfile.studentDetails?.year || '3rd Year (Class of 2027)')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!name.trim()) {
       setError('Please provide your full legal or campus name.')
       return
     }
 
-    saveProfile({
-      ...userProfile,
-      studentDetails: {
+    try {
+      setIsSubmitting(true)
+      setError('')
+
+      await saveStudentOnboarding({
         name: name.trim(),
         id: studentId.trim(),
         dept: department.trim(),
         year: year.trim(),
-      },
-      onboardingComplete: true,
-    })
-
-    setCurrentScreen('student-dashboard')
+      })
+    } catch (err) {
+      console.error('Error saving student profile:', err)
+      setError('Failed to persist profile to database. Continuing with local session...')
+      setCurrentScreen('student-dashboard')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -125,14 +131,16 @@ export default function StudentDetailsScreen() {
               type="button"
               className={styles.backBtn}
               onClick={() => setCurrentScreen('college-selection')}
+              disabled={isSubmitting}
             >
               ← BACK
             </button>
             <button
               type="submit"
               className={styles.primaryBtn}
+              disabled={isSubmitting}
             >
-              LAUNCH STUDENT DASHBOARD →
+              {isSubmitting ? 'SAVING PROFILE...' : 'LAUNCH STUDENT DASHBOARD →'}
             </button>
           </div>
         </form>

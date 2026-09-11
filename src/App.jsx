@@ -48,6 +48,7 @@ export default function App() {
   const [draftReport, setDraftReport] = useState(null)
   const [submittedReport, setSubmittedReport] = useState(null)
   const [selectedClusterId, setSelectedClusterId] = useState('C-104')
+  const [selectedClusterDbId, setSelectedClusterDbId] = useState(null)
 
   // Unauthenticated route protection
   useEffect(() => {
@@ -175,8 +176,9 @@ export default function App() {
       case 'admin-dashboard':
         return (
           <AdminDashboardScreen
-            onSelectCluster={(cId) => {
-              setSelectedClusterId(cId)
+            onSelectCluster={(cKey, cDbId) => {
+              setSelectedClusterId(cKey)
+              setSelectedClusterDbId(cDbId || null)
               setCurrentScreen('admin-issue-details')
             }}
           />
@@ -184,14 +186,15 @@ export default function App() {
       case 'admin-all-issues':
         return (
           <AdminAllIssuesScreen
-            onSelectCluster={(cId) => {
-              setSelectedClusterId(cId)
+            onSelectCluster={(cKey, cDbId) => {
+              setSelectedClusterId(cKey)
+              setSelectedClusterDbId(cDbId || null)
               setCurrentScreen('admin-issue-details')
             }}
           />
         )
       case 'admin-issue-details':
-        return <AdminIssueDetailsScreen clusterId={selectedClusterId} />
+        return <AdminIssueDetailsScreen clusterId={selectedClusterId} clusterDbId={selectedClusterDbId} />
       case 'admin-analytics':
         return <AdminAnalyticsScreen />
       case 'admin-departments':
@@ -202,8 +205,9 @@ export default function App() {
       default:
         return userRole === 'admin' ? (
           <AdminDashboardScreen
-            onSelectCluster={(cId) => {
-              setSelectedClusterId(cId)
+            onSelectCluster={(cKey, cDbId) => {
+              setSelectedClusterId(cKey)
+              setSelectedClusterDbId(cDbId || null)
               setCurrentScreen('admin-issue-details')
             }}
           />

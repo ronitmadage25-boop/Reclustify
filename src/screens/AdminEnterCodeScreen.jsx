@@ -3,27 +3,31 @@ import { useAuth } from '../context/AuthContext'
 import styles from './FlowScreens.module.css'
 
 export default function AdminEnterCodeScreen() {
-  const { userProfile, saveProfile, setCurrentScreen } = useAuth()
-  const [code, setCode] = useState('882910')
+  const { userProfile, verifyAdminCode, setCurrentScreen } = useAuth()
+  const [code, setCode] = useState(userProfile.adminDetails?.code || '882910')
   const [error, setError] = useState('')
+  const [isVerifying, setIsVerifying] = useState(false)
 
-  const handleVerifyCode = (e) => {
+  const handleVerifyCode = async (e) => {
     e.preventDefault()
     if (code.trim().length < 4) {
       setError('Please enter a valid institution security code.')
       return
     }
 
-    saveProfile({
-      ...userProfile,
-      adminDetails: {
-        ...userProfile.adminDetails,
-        code: code.trim(),
-      },
-      onboardingComplete: true,
-    })
-
-    setCurrentScreen('admin-dashboard')
+    try {
+      setIsVerifying(true)
+      setError('')
+      const res = await verifyAdminCode(code.trim())
+      if (!res.success) {
+        setError(res.error || 'Verification code does not match the issued institutional key.')
+      }
+    } catch (err) {
+      console.error('Error during code verification:', err)
+      setError('Network verification error. Please try again.')
+    } finally {
+      setIsVerifying(false)
+    }
   }
 
   return (
@@ -70,14 +74,16 @@ export default function AdminEnterCodeScreen() {
               type="button"
               className={styles.backBtn}
               onClick={() => setCurrentScreen('admin-request-submitted')}
+              disabled={isVerifying}
             >
               ← BACK
             </button>
             <button
               type="submit"
               className={styles.primaryBtn}
+              disabled={isVerifying}
             >
-              VERIFY & UNLOCK DASHBOARD →
+              {isVerifying ? 'VERIFYING CODE...' : 'VERIFY & UNLOCK DASHBOARD →'}
             </button>
           </div>
         </form>

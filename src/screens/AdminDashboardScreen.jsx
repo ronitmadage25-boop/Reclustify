@@ -1,15 +1,51 @@
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { fetchAdminClusters, fetchAdminDashboardStats } from '../services/db'
 import styles from './AdminScreens.module.css'
 
 export default function AdminDashboardScreen({ onSelectCluster }) {
   const { userProfile, setCurrentScreen } = useAuth()
+  const [topClusters, setTopClusters] = useState([])
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const handleOpenCluster = (clusterId) => {
+  const institutionId = userProfile?.collegeId || 'a0000000-0000-0000-0000-000000000001'
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true)
+      const [clustersData, statsData] = await Promise.all([
+        fetchAdminClusters(institutionId),
+        fetchAdminDashboardStats(institutionId),
+      ])
+      // Show top 2 non-resolved clusters by priority
+      const top = (clustersData || [])
+        .filter((c) => c.status !== 'RESOLVED')
+        .slice(0, 2)
+      setTopClusters(top)
+      setStats(statsData)
+      setLoading(false)
+    }
+    load()
+  }, [institutionId])
+
+  const handleOpenCluster = (clusterKey, clusterDbId) => {
     if (onSelectCluster) {
-      onSelectCluster(clusterId)
+      onSelectCluster(clusterKey, clusterDbId)
     }
     setCurrentScreen('admin-issue-details')
   }
+
+  const displayStats = {
+    totalComplaints: stats?.totalComplaints ?? 142,
+    totalClusters: stats?.totalClusters ?? 14,
+    resolvedClusters: stats?.resolvedClusters ?? 0,
+    criticalAlerts: stats?.criticalAlerts ?? 3,
+  }
+
+  const resolutionRate = displayStats.totalClusters > 0
+    ? Math.round((displayStats.resolvedClusters / displayStats.totalClusters) * 100)
+    : 0
 
   return (
     <div className={styles.dashboard}>
@@ -38,26 +74,26 @@ export default function AdminDashboardScreen({ onSelectCluster }) {
       <div className={styles.metricsGrid}>
         <div className={styles.metricCard}>
           <span className={styles.metricLabel}>TOTAL STUDENT COMPLAINTS</span>
-          <span className={styles.metricValue}>142</span>
-          <span className={styles.metricNote}>+18 LOGGED THIS WEEK</span>
+          <span className={styles.metricValue}>{loading ? '—' : displayStats.totalComplaints}</span>
+          <span className={styles.metricNote}>ACROSS ALL ACTIVE CLUSTERS</span>
         </div>
 
         <div className={styles.metricCard}>
           <span className={styles.metricLabel}>FORMED PROBLEM CLUSTERS</span>
-          <span className={`${styles.metricValue} ${styles.metricAccent}`}>14</span>
-          <span className={styles.metricNote}>10:1 COMPRESSION RATIO</span>
+          <span className={`${styles.metricValue} ${styles.metricAccent}`}>{loading ? '—' : displayStats.totalClusters}</span>
+          <span className={styles.metricNote}>ALGORITHMICALLY GROUPED TICKETS</span>
         </div>
 
         <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>AVG RESOLUTION CYCLE</span>
-          <span className={styles.metricValue}>2.4d</span>
-          <span className={styles.metricNote}>-38% FASTER WITH CLUSTERING</span>
+          <span className={styles.metricLabel}>RESOLUTION RATE</span>
+          <span className={styles.metricValue}>{loading ? '—' : `${resolutionRate}%`}</span>
+          <span className={styles.metricNote}>{loading ? '' : `${displayStats.resolvedClusters} OF ${displayStats.totalClusters} CLUSTERS RESOLVED`}</span>
         </div>
 
         <div className={styles.metricCard}>
           <span className={styles.metricLabel}>CRITICAL INFRASTRUCTURE ALERTS</span>
-          <span className={styles.metricValue}>03</span>
-          <span className={styles.metricNote}>HIGH RECURRENCE CONCENTRATION</span>
+          <span className={styles.metricValue}>{loading ? '—' : String(displayStats.criticalAlerts).padStart(2, '0')}</span>
+          <span className={styles.metricNote}>HIGH/CRITICAL PRIORITY, UNRESOLVED</span>
         </div>
       </div>
 
@@ -80,57 +116,58 @@ export default function AdminDashboardScreen({ onSelectCluster }) {
           </div>
 
           <div className={styles.clusterList}>
-            <div className={styles.clusterCard}>
-              <div className={styles.clusterHeader}>
-                <span className={styles.clusterId}>CLUSTER #C-104</span>
-                <span className={`${styles.statusBadge} ${styles.statusHigh}`}>HIGH PRIORITY (82/100)</span>
+            {loading && (
+              <div style={{ padding: '32px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em' }}>
+                LOADING ACTIVE CLUSTERS...
               </div>
-              <h3 className={styles.clusterTitle}>LAB 3 WI-FI CONNECTIVITY & DROPOUTS</h3>
-              <p className={styles.clusterDesc}>
-                4 students filed independent reports regarding persistent network disconnects in Science Block Room 204.
-              </p>
-              <div className={styles.clusterMeta}>
-                <span>DEPARTMENT: IT INFRASTRUCTURE</span>
-                <span>SINCE: 2 DAYS</span>
-                <span>REPORTS: 4 CONVERGED</span>
-              </div>
-              <div className={styles.clusterFooter}>
-                <span className={styles.assignee}>LEAD ASSIGNEE: MARCUS VANCE (IT)</span>
-                <button
-                  type="button"
-                  className={styles.actionBtn}
-                  onClick={() => handleOpenCluster('C-104')}
-                >
-                  INSPECT CLUSTER DETAILS →
-                </button>
-              </div>
-            </div>
+            )}
 
-            <div className={styles.clusterCard}>
-              <div className={styles.clusterHeader}>
-                <span className={styles.clusterId}>CLUSTER #C-098</span>
-                <span className={`${styles.statusBadge} ${styles.statusMedium}`}>MEDIUM PRIORITY (64/100)</span>
+            {!loading && topClusters.length === 0 && (
+              <div style={{ padding: '32px', textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.12em', color: '#FF3000', border: '1px solid #000', display: 'inline-block', padding: '6px 14px', marginBottom: '12px' }}>
+                  NO ACTIVE CLUSTERS
+                </div>
+                <p style={{ fontSize: '13px', color: '#666', marginTop: '8px' }}>
+                  All clusters are resolved, or no reports have been filed yet.
+                </p>
               </div>
-              <h3 className={styles.clusterTitle}>LIBRARY 3RD FLOOR HVAC OVERHEATING</h3>
-              <p className={styles.clusterDesc}>
-                7 complaints submitted by students studying in quiet cubicles. Temperature sensor suspected faulty.
-              </p>
-              <div className={styles.clusterMeta}>
-                <span>DEPARTMENT: FACILITIES & HVAC</span>
-                <span>SINCE: 4 DAYS</span>
-                <span>REPORTS: 7 CONVERGED</span>
+            )}
+
+            {!loading && topClusters.map((cluster) => (
+              <div key={cluster.id} className={styles.clusterCard}>
+                <div className={styles.clusterHeader}>
+                  <span className={styles.clusterId}>CLUSTER #{cluster.cluster_key}</span>
+                  <span className={`${styles.statusBadge} ${
+                    cluster.priority === 'HIGH' || cluster.priority === 'CRITICAL'
+                      ? styles.statusHigh
+                      : cluster.priority === 'MEDIUM'
+                      ? styles.statusMedium
+                      : styles.statusLow
+                  }`}>
+                    {cluster.priority} PRIORITY ({cluster.priority_score}/100)
+                  </span>
+                </div>
+                <h3 className={styles.clusterTitle}>{cluster.title}</h3>
+                <p className={styles.clusterDesc}>
+                  {cluster.reports_count || 0} students filed independent reports regarding this issue in {cluster.location || 'campus'}.
+                </p>
+                <div className={styles.clusterMeta}>
+                  <span>DEPARTMENT: {cluster.department || 'CAMPUS OPERATIONS'}</span>
+                  <span>STATUS: {cluster.status}</span>
+                  <span>REPORTS: {cluster.reports_count || 0} CONVERGED</span>
+                </div>
+                <div className={styles.clusterFooter}>
+                  <span className={styles.assignee}>CATEGORY: {cluster.category || 'GENERAL'}</span>
+                  <button
+                    type="button"
+                    className={styles.actionBtn}
+                    onClick={() => handleOpenCluster(cluster.cluster_key, cluster.id)}
+                  >
+                    INSPECT CLUSTER DETAILS →
+                  </button>
+                </div>
               </div>
-              <div className={styles.clusterFooter}>
-                <span className={styles.assignee}>LEAD ASSIGNEE: SARAH CHEN (FACILITIES)</span>
-                <button
-                  type="button"
-                  className={styles.actionBtn}
-                  onClick={() => handleOpenCluster('C-098')}
-                >
-                  INSPECT CLUSTER DETAILS →
-                </button>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -138,60 +175,21 @@ export default function AdminDashboardScreen({ onSelectCluster }) {
         <div className={styles.colSide}>
           <div className={styles.sectionHeader}>
             <div>
-              <h2 className={styles.sectionTitle}>DEPARTMENT STATUS</h2>
-              <span className={styles.sectionSub}>WORKLOAD DISTRIBUTION</span>
-            </div>
-          </div>
-
-          <div className={styles.deptStatusList}>
-            <div className={styles.deptItem}>
-              <div className={styles.deptItemTop}>
-                <span className={styles.deptName}>IT INFRASTRUCTURE</span>
-                <span className={styles.deptCount}>5 CLUSTERS</span>
-              </div>
-              <div className={styles.progressBar}>
-                <div className={styles.progressFill} style={{ width: '75%' }}></div>
-              </div>
-              <span className={styles.deptNote}>High volume in Science & Engineering labs</span>
-            </div>
-
-            <div className={styles.deptItem}>
-              <div className={styles.deptItemTop}>
-                <span className={styles.deptName}>CAMPUS FACILITIES</span>
-                <span className={styles.deptCount}>6 CLUSTERS</span>
-              </div>
-              <div className={styles.progressBar}>
-                <div className={styles.progressFill} style={{ width: '60%' }}></div>
-              </div>
-              <span className={styles.deptNote}>HVAC and plumbing maintenance queued</span>
-            </div>
-
-            <div className={styles.deptItem}>
-              <div className={styles.deptItemTop}>
-                <span className={styles.deptName}>HOUSING & RESIDENTIAL</span>
-                <span className={styles.deptCount}>2 CLUSTERS</span>
-              </div>
-              <div className={styles.progressBar}>
-                <div className={styles.progressFill} style={{ width: '30%' }}></div>
-              </div>
-              <span className={styles.deptNote}>Dorm water pressure issue resolved</span>
-            </div>
-
-            <div className={styles.deptItem}>
-              <div className={styles.deptItemTop}>
-                <span className={styles.deptName}>CAMPUS SAFETY</span>
-                <span className={styles.deptCount}>1 CLUSTER</span>
-              </div>
-              <div className={styles.progressBar}>
-                <div className={styles.progressFill} style={{ width: '15%' }}></div>
-              </div>
-              <span className={styles.deptNote}>Path lighting repair scheduled</span>
+              <h2 className={styles.sectionTitle}>MANAGEMENT SHORTCUTS</h2>
+              <span className={styles.sectionSub}>QUICK ACCESS NAVIGATION</span>
             </div>
           </div>
 
           <div className={styles.quickActionsCard}>
             <span className={styles.cardHeaderSmall}>MANAGEMENT SHORTCUTS</span>
             <div className={styles.shortcutBtns}>
+              <button
+                type="button"
+                className={styles.shortcutBtn}
+                onClick={() => setCurrentScreen('admin-all-issues')}
+              >
+                ALL CLUSTERS & ISSUES →
+              </button>
               <button
                 type="button"
                 className={styles.shortcutBtn}
@@ -215,6 +213,31 @@ export default function AdminDashboardScreen({ onSelectCluster }) {
               </button>
             </div>
           </div>
+
+          {/* Stats summary card */}
+          {!loading && stats && (
+            <div className={styles.statusControlCard} style={{ marginTop: '16px' }}>
+              <span className={styles.cardHeaderSmall}>CAMPUS STATUS OVERVIEW</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em' }}>
+                  <span>TOTAL COMPLAINTS</span>
+                  <span style={{ color: '#FF3000' }}>{displayStats.totalComplaints}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em' }}>
+                  <span>ACTIVE CLUSTERS</span>
+                  <span>{displayStats.totalClusters - displayStats.resolvedClusters}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em' }}>
+                  <span>RESOLVED CLUSTERS</span>
+                  <span style={{ color: '#00B85C' }}>{displayStats.resolvedClusters}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em' }}>
+                  <span>CRITICAL ALERTS</span>
+                  <span style={{ color: '#FF3000' }}>{displayStats.criticalAlerts}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

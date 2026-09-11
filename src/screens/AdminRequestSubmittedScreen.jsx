@@ -32,7 +32,7 @@ export default function AdminRequestSubmittedScreen() {
 
           <div className={styles.codeRevealBox}>
             <span className={styles.codeRevealTag}>YOUR INSTITUTION VERIFICATION KEY</span>
-            <div className={styles.codeDisplay}>882910</div>
+            <div className={styles.codeDisplay}>{userProfile.adminDetails?.code || '882910'}</div>
             <span className={styles.codeHelp}>Authorized for {userProfile.adminDetails?.name || 'Administrator'}</span>
           </div>
 
