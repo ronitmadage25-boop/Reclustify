@@ -166,16 +166,30 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Helper to determine OAuth redirect URL
+  const getRedirectUrl = () => {
+    const siteUrl = import.meta.env.VITE_SITE_URL
+    if (siteUrl) {
+      return siteUrl.replace(/\/+$/, '')
+    }
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return window.location.origin
+    }
+    return 'https://reclustify.vercel.app'
+  }
+
   // Trigger Google OAuth
   const signInWithGoogle = async () => {
     try {
       setIsAuthenticating(true)
       setAuthError(null)
 
+      const redirectTo = getRedirectUrl()
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo
         }
       })
 
