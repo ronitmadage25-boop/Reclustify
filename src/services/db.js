@@ -350,15 +350,15 @@ export async function submitComplaint(userId, institutionId, complaintData) {
       id: crypto.randomUUID?.() || `demo-${Date.now()}`,
       user_id: userId,
       institution_id: institutionId,
-      cluster_id: 'b0000000-0000-0000-0000-000000000001',
+      cluster_id: null,
       ticket_number: generateTicketNumber(),
       title: complaintData.title,
       description: complaintData.description,
       category: complaintData.category,
       location: complaintData.location,
       severity: complaintData.severity,
-      status: 'IN PROGRESS',
-      similarity_score: '89%',
+      status: 'SUBMITTED',
+      priority: 'MEDIUM',
       created_at: new Date().toISOString(),
     }
   }
@@ -432,7 +432,7 @@ export async function submitComplaint(userId, institutionId, complaintData) {
       }
     }
 
-    // 2. Insert the complaint
+    // 2. Insert the complaint with initial status SUBMITTED
     const ticketNumber = generateTicketNumber()
     const { data: complaint, error: complaintErr } = await supabase
       .from('complaints')
@@ -446,8 +446,12 @@ export async function submitComplaint(userId, institutionId, complaintData) {
         category: complaintData.category,
         location: complaintData.location,
         severity: complaintData.severity,
-        status: 'IN PROGRESS',
-        similarity_score: '89%',
+        status: 'SUBMITTED',
+        priority: complaintData.severity === 'CRITICAL' ? 'CRITICAL'
+               : complaintData.severity === 'HIGH' ? 'HIGH'
+               : complaintData.severity === 'LOW' ? 'LOW'
+               : 'MEDIUM',
+        department: categoryToDepartment(complaintData.category),
       })
       .select()
       .maybeSingle()
@@ -504,15 +508,18 @@ export async function fetchStudentComplaints(userId) {
     return (data || []).map((c) => ({
       id: c.ticket_number,
       dbId: c.id,
-      clusterId: c.cluster?.cluster_key || c.cluster_id || 'C-???',
+      clusterId: c.cluster?.cluster_key || c.cluster_id || null,
       clusterDbId: c.cluster_id,
       clusterTitle: c.cluster?.title || c.title,
       title: c.title,
+      description: c.description || '',
       location: c.location || '',
       category: c.category,
       severity: c.severity,
+      priority: c.priority || 'MEDIUM',
       status: c.status,
-      department: c.cluster?.department || '',
+      department: c.department || c.cluster?.department || '',
+      resolution_notes: c.resolution_notes || '',
       submittedAt: formatRelativeTime(c.created_at),
       createdAt: c.created_at,
     }))
@@ -581,11 +588,17 @@ export async function fetchClusterDetails(clusterDbId) {
       complaints: (complaints || []).map((c) => ({
         id: c.ticket_number,
         dbId: c.id,
+        title: c.title,
         text: `"${c.description}"`,
+        description: c.description,
+        location: c.location || '',
+        category: c.category,
         time: formatRelativeTime(c.created_at),
-        similarity: c.similarity_score || '85%',
+        similarity: c.similarity_score || '—',
         severity: c.severity,
+        priority: c.priority || 'MEDIUM',
         status: c.status,
+        resolution_notes: c.resolution_notes || '',
       })),
     }
   } catch (err) {
@@ -601,9 +614,13 @@ export async function fetchClusterDetails(clusterDbId) {
 export async function updateClusterStatus(clusterDbId, newStatus, resolutionNotes = null) {
   if (!clusterDbId) return false
 
+  // Validate against the expanded status set
+  const VALID_STATUSES = ['SUBMITTED', 'UNDER REVIEW', 'ASSIGNED', 'IN PROGRESS', 'RESOLVED', 'CLOSED']
+  const status = VALID_STATUSES.includes(newStatus) ? newStatus : 'IN PROGRESS'
+
   try {
     const clusterUpdate = {
-      status: newStatus,
+      status,
       updated_at: new Date().toISOString(),
     }
     if (resolutionNotes !== null) {
@@ -623,7 +640,7 @@ export async function updateClusterStatus(clusterDbId, newStatus, resolutionNote
     // Cascade status to all complaints in this cluster
     await supabase
       .from('complaints')
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .update({ status, updated_at: new Date().toISOString() })
       .eq('cluster_id', clusterDbId)
 
     return true
@@ -634,8 +651,88 @@ export async function updateClusterStatus(clusterDbId, newStatus, resolutionNote
 }
 
 /**
+ * Updates a single complaint's status (and optionally priority/resolution/department).
+ * Used by the admin from AdminIssueDetailsScreen.
+ */
+export async function updateComplaintStatus(complaintDbId, updates) {
+  if (!complaintDbId) return false
+
+  const VALID_STATUSES = ['SUBMITTED', 'UNDER REVIEW', 'ASSIGNED', 'IN PROGRESS', 'RESOLVED', 'CLOSED']
+
+  try {
+    const updatePayload = { updated_at: new Date().toISOString() }
+
+    if (updates.status && VALID_STATUSES.includes(updates.status)) {
+      updatePayload.status = updates.status
+    }
+    if (updates.priority) updatePayload.priority = updates.priority
+    if (updates.resolution_notes !== undefined) updatePayload.resolution_notes = updates.resolution_notes
+    if (updates.department) updatePayload.department = updates.department
+
+    const { error } = await supabase
+      .from('complaints')
+      .update(updatePayload)
+      .eq('id', complaintDbId)
+
+    if (error) {
+      console.warn('Error updating complaint:', error)
+      return false
+    }
+    return true
+  } catch (err) {
+    console.error('updateComplaintStatus exception:', err)
+    return false
+  }
+}
+
+/**
+ * Fetches ALL complaints for an institution (for admin use).
+ * Returns every complaint regardless of cluster, ordered by newest first.
+ * Used by AdminAllIssuesScreen.
+ */
+export async function fetchAdminAllComplaints(institutionId) {
+  if (!institutionId) return []
+
+  try {
+    const { data, error } = await supabase
+      .from('complaints')
+      .select('*, cluster:clusters(id, cluster_key, title, department)')
+      .eq('institution_id', institutionId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.warn('Error fetching admin complaints:', error)
+      return []
+    }
+
+    return (data || []).map((c) => ({
+      id: c.id,
+      ticketNumber: c.ticket_number,
+      clusterId: c.cluster?.cluster_key || null,
+      clusterDbId: c.cluster_id,
+      clusterTitle: c.cluster?.title || null,
+      title: c.title,
+      description: c.description,
+      category: c.category,
+      location: c.location || '',
+      severity: c.severity,
+      priority: c.priority || 'MEDIUM',
+      status: c.status,
+      department: c.department || c.cluster?.department || '',
+      resolution_notes: c.resolution_notes || '',
+      submittedAt: formatRelativeTime(c.created_at),
+      createdAt: c.created_at,
+    }))
+  } catch (err) {
+    console.error('fetchAdminAllComplaints exception:', err)
+    return []
+  }
+}
+
+/**
  * Fetches summary metrics for the AdminDashboardScreen.
- * Returns { totalComplaints, totalClusters, resolvedClusters, criticalAlerts }
+ * Returns { totalComplaints, openComplaints, inProgressComplaints, resolvedComplaints, criticalAlerts }
+ * All from real database data — no hardcoded values.
  */
 export async function fetchAdminDashboardStats(institutionId) {
   if (!institutionId) return null
@@ -646,28 +743,36 @@ export async function fetchAdminDashboardStats(institutionId) {
       .select('*', { count: 'exact', head: true })
       .eq('institution_id', institutionId)
 
-    const { count: totalClusters } = await supabase
-      .from('clusters')
+    const { count: openComplaints } = await supabase
+      .from('complaints')
       .select('*', { count: 'exact', head: true })
       .eq('institution_id', institutionId)
+      .in('status', ['SUBMITTED', 'UNDER REVIEW'])
 
-    const { count: resolvedClusters } = await supabase
-      .from('clusters')
+    const { count: inProgressComplaints } = await supabase
+      .from('complaints')
       .select('*', { count: 'exact', head: true })
       .eq('institution_id', institutionId)
-      .eq('status', 'RESOLVED')
+      .in('status', ['ASSIGNED', 'IN PROGRESS'])
+
+    const { count: resolvedComplaints } = await supabase
+      .from('complaints')
+      .select('*', { count: 'exact', head: true })
+      .eq('institution_id', institutionId)
+      .in('status', ['RESOLVED', 'CLOSED'])
 
     const { count: criticalAlerts } = await supabase
-      .from('clusters')
+      .from('complaints')
       .select('*', { count: 'exact', head: true })
       .eq('institution_id', institutionId)
       .in('priority', ['HIGH', 'CRITICAL'])
-      .neq('status', 'RESOLVED')
+      .not('status', 'in', '("RESOLVED","CLOSED")')
 
     return {
       totalComplaints: totalComplaints || 0,
-      totalClusters: totalClusters || 0,
-      resolvedClusters: resolvedClusters || 0,
+      openComplaints: openComplaints || 0,
+      inProgressComplaints: inProgressComplaints || 0,
+      resolvedComplaints: resolvedComplaints || 0,
       criticalAlerts: criticalAlerts || 0,
     }
   } catch (err) {

@@ -13,9 +13,10 @@ export default function MyReportsScreen() {
 
   const filteredReports = studentReports.filter((rep) => {
     if (filter === 'ALL') return true
-    if (filter === 'IN PROGRESS') return rep.status === 'IN PROGRESS'
-    if (filter === 'RESOLVED') return rep.status === 'RESOLVED'
-    return true
+    if (filter === 'OPEN') return ['SUBMITTED', 'UNDER REVIEW'].includes(rep.status)
+    if (filter === 'IN PROGRESS') return ['ASSIGNED', 'IN PROGRESS'].includes(rep.status)
+    if (filter === 'RESOLVED') return ['RESOLVED', 'CLOSED'].includes(rep.status)
+    return rep.status === filter
   })
 
   const handleTrack = (report) => {
@@ -49,16 +50,30 @@ export default function MyReportsScreen() {
       {/* Filter Tabs */}
       <div className={styles.filterBar}>
         <div className={styles.filterTabs}>
-          {['ALL', 'IN PROGRESS', 'RESOLVED'].map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className={`${styles.filterTab} ${filter === tab ? styles.filterTabActive : ''}`}
-              onClick={() => setFilter(tab)}
-            >
-              {tab} ({tab === 'ALL' ? studentReports.length : studentReports.filter(r => r.status === tab).length})
-            </button>
-          ))}
+          {[
+            { label: 'ALL', value: 'ALL' },
+            { label: 'OPEN', value: 'OPEN' },
+            { label: 'IN PROGRESS', value: 'IN PROGRESS' },
+            { label: 'RESOLVED', value: 'RESOLVED' },
+          ].map(({ label, value }) => {
+            const count = value === 'ALL'
+              ? studentReports.length
+              : value === 'OPEN'
+                ? studentReports.filter(r => ['SUBMITTED', 'UNDER REVIEW'].includes(r.status)).length
+                : value === 'IN PROGRESS'
+                  ? studentReports.filter(r => ['ASSIGNED', 'IN PROGRESS'].includes(r.status)).length
+                  : studentReports.filter(r => ['RESOLVED', 'CLOSED'].includes(r.status)).length
+            return (
+              <button
+                key={value}
+                type="button"
+                className={`${styles.filterTab} ${filter === value ? styles.filterTabActive : ''}`}
+                onClick={() => setFilter(value)}
+              >
+                {label} ({count})
+              </button>
+            )
+          })}
         </div>
         <span className={styles.filterCount}>SHOWING {filteredReports.length} REPORTS</span>
       </div>

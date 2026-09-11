@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Android Capacitor build outputs (keep public/reclustify.apk tracked)
+android/.gradle
+android/build
+android/app/build
+android/.capacitor
+# NOTE: public/reclustify.apk is intentionally tracked for Vercel distribution

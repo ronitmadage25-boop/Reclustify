@@ -87,16 +87,26 @@ export default function Nav() {
               </button>
             </div>
           ) : (
-            <button
-              className={styles.ctaButton}
-              onClick={() => setAuthModalOpen(true)}
-              aria-label="Get Started with Reclustify"
-              tabIndex={0}
-              type="button"
-            >
-              GET STARTED
-              <span className={styles.ctaArrow} aria-hidden="true">→</span>
-            </button>
+            <div className={styles.authNavGroup}>
+              <a
+                href="/reclustify.apk"
+                className={styles.downloadBtn}
+                download="reclustify.apk"
+                aria-label="Download Reclustify Android app"
+              >
+                ↓ GET THE APP
+              </a>
+              <button
+                className={styles.ctaButton}
+                onClick={() => setAuthModalOpen(true)}
+                aria-label="Get Started with Reclustify"
+                tabIndex={0}
+                type="button"
+              >
+                GET STARTED
+                <span className={styles.ctaArrow} aria-hidden="true">→</span>
+              </button>
+            </div>
           )}
 
           {/* Mobile Menu Toggle */}
@@ -148,16 +158,26 @@ export default function Nav() {
                 DASHBOARD →
               </button>
             ) : (
-              <button
-                className={styles.mobileCtaButton}
-                type="button"
-                onClick={() => {
-                  setAuthModalOpen(true)
-                  setMenuOpen(false)
-                }}
-              >
-                GET STARTED →
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <a
+                  href="/reclustify.apk"
+                  download="reclustify.apk"
+                  className={styles.mobileDownloadBtn}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  ↓ GET THE APP
+                </a>
+                <button
+                  className={styles.mobileCtaButton}
+                  type="button"
+                  onClick={() => {
+                    setAuthModalOpen(true)
+                    setMenuOpen(false)
+                  }}
+                >
+                  GET STARTED →
+                </button>
+              </div>
             )}
           </li>
         </ul>

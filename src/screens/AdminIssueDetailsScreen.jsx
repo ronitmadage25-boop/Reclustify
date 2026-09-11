@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { fetchClusterDetails, updateClusterStatus, fetchComplaintAttachments } from '../services/db'
+import { fetchClusterDetails, updateClusterStatus, fetchComplaintAttachments, updateComplaintStatus } from '../services/db'
 import styles from './AdminScreens.module.css'
 
 // Fallback seed data for the demo cluster C-104 (shown when navigating from AdminDashboard)
@@ -91,6 +91,7 @@ export default function AdminIssueDetailsScreen({ clusterId = 'C-104', clusterDb
 
     const dbId = clusterData?.id || clusterDbId
     if (dbId) {
+      // Update the cluster status + cascade to all complaints in it
       await updateClusterStatus(dbId, newStatus)
     }
 
@@ -211,20 +212,22 @@ export default function AdminIssueDetailsScreen({ clusterId = 'C-104', clusterDb
               ))}
             </div>
 
-            {/* Root Cause Hypothesis */}
+          {/* Pattern Notes (shown only when there are multiple reports) */}
+          {reportCount >= 2 && (
             <div className={styles.hypothesisCard}>
               <div className={styles.hypothesisHeader}>
-                <span className={styles.hypoTag}>AI PATTERN HYPOTHESIS</span>
-                <span className={styles.hypoConfidence}>CONFIDENCE: {Math.min(98, 70 + reportCount * 4)}%</span>
+                <span className={styles.hypoTag}>CLUSTER PATTERN NOTES</span>
+                <span className={styles.hypoConfidence}>{reportCount} CONVERGED REPORTS</span>
               </div>
               <p className={styles.hypoText}>
-                Cluster analysis suggests a recurring pattern in {cluster.location || 'this location'}.
+                {reportCount} reports from {cluster.location || 'this area'} have been clustered together.
                 {reportCount >= 3
-                  ? ` With ${reportCount} converged reports, a systemic root cause is likely — infrastructure inspection recommended to resolve all complaints simultaneously.`
-                  : ' Monitor for additional reports to identify a systemic root cause.'}
+                  ? ` This volume suggests a systemic issue — infrastructure inspection of ${cluster.category || 'this area'} is recommended.`
+                  : ' Continue monitoring for additional reports to confirm the pattern.'}
               </p>
             </div>
-          </div>
+          )}
+        </div>
 
           {/* Right: Priority Engine & Status Management */}
           <div className={styles.colSide}>
@@ -272,37 +275,43 @@ export default function AdminIssueDetailsScreen({ clusterId = 'C-104', clusterDb
 
             {/* Status Control Card */}
             <div className={styles.statusControlCard}>
-              <span className={styles.cardHeaderSmall}>STATUS & DISPATCH CONTROL</span>
+              <span className={styles.cardHeaderSmall}>STATUS &amp; DISPATCH CONTROL</span>
               <div className={styles.currentStatusDisplay}>
                 CURRENT: <strong>{currentStatus}</strong>
               </div>
 
               <div className={styles.statusButtons}>
-                <button
-                  type="button"
-                  className={`${styles.statusActionBtn} ${currentStatus === 'ASSIGNED' ? styles.statusBtnActive : ''}`}
-                  onClick={() => handleUpdateStatus('ASSIGNED')}
-                  disabled={statusUpdating}
-                >
-                  MARK ASSIGNED
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.statusActionBtn} ${currentStatus === 'IN PROGRESS' ? styles.statusBtnActive : ''}`}
-                  onClick={() => handleUpdateStatus('IN PROGRESS')}
-                  disabled={statusUpdating}
-                >
-                  MARK IN PROGRESS
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.statusActionBtn} ${currentStatus === 'RESOLVED' ? styles.statusBtnResolved : ''}`}
-                  onClick={() => handleUpdateStatus('RESOLVED')}
-                  disabled={statusUpdating}
-                >
-                  {statusUpdating ? 'SAVING...' : 'MARK RESOLVED ✓'}
-                </button>
+                {[
+                  { label: 'SUBMITTED', value: 'SUBMITTED' },
+                  { label: 'UNDER REVIEW', value: 'UNDER REVIEW' },
+                  { label: 'ASSIGNED', value: 'ASSIGNED' },
+                  { label: 'IN PROGRESS', value: 'IN PROGRESS' },
+                  { label: 'RESOLVED ✓', value: 'RESOLVED' },
+                  { label: 'CLOSED', value: 'CLOSED' },
+                ].map(({ label, value }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`${styles.statusActionBtn} ${
+                      currentStatus === value
+                        ? value === 'RESOLVED' || value === 'CLOSED'
+                          ? styles.statusBtnResolved
+                          : styles.statusBtnActive
+                        : ''
+                    }`}
+                    onClick={() => handleUpdateStatus(value)}
+                    disabled={statusUpdating || currentStatus === value}
+                  >
+                    {statusUpdating && currentStatus === value ? 'SAVING...' : label}
+                  </button>
+                ))}
               </div>
+
+              {statusUpdated && (
+                <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em', color: '#00B85C', marginTop: '12px' }}>
+                  ✓ STATUS UPDATED — STUDENT WILL SEE NEW STATUS
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -37,14 +37,15 @@ export default function AdminDashboardScreen({ onSelectCluster }) {
   }
 
   const displayStats = {
-    totalComplaints: stats?.totalComplaints ?? 142,
-    totalClusters: stats?.totalClusters ?? 14,
-    resolvedClusters: stats?.resolvedClusters ?? 0,
-    criticalAlerts: stats?.criticalAlerts ?? 3,
+    totalComplaints: stats?.totalComplaints ?? 0,
+    openComplaints: stats?.openComplaints ?? 0,
+    inProgressComplaints: stats?.inProgressComplaints ?? 0,
+    resolvedComplaints: stats?.resolvedComplaints ?? 0,
+    criticalAlerts: stats?.criticalAlerts ?? 0,
   }
 
-  const resolutionRate = displayStats.totalClusters > 0
-    ? Math.round((displayStats.resolvedClusters / displayStats.totalClusters) * 100)
+  const resolutionRate = displayStats.totalComplaints > 0
+    ? Math.round((displayStats.resolvedComplaints / displayStats.totalComplaints) * 100)
     : 0
 
   return (
@@ -73,27 +74,27 @@ export default function AdminDashboardScreen({ onSelectCluster }) {
       {/* Metrics Row */}
       <div className={styles.metricsGrid}>
         <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>TOTAL STUDENT COMPLAINTS</span>
+          <span className={styles.metricLabel}>TOTAL COMPLAINTS</span>
           <span className={styles.metricValue}>{loading ? '—' : displayStats.totalComplaints}</span>
-          <span className={styles.metricNote}>ACROSS ALL ACTIVE CLUSTERS</span>
+          <span className={styles.metricNote}>ALL SUBMITTED THIS INSTITUTION</span>
         </div>
 
         <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>FORMED PROBLEM CLUSTERS</span>
-          <span className={`${styles.metricValue} ${styles.metricAccent}`}>{loading ? '—' : displayStats.totalClusters}</span>
-          <span className={styles.metricNote}>ALGORITHMICALLY GROUPED TICKETS</span>
+          <span className={styles.metricLabel}>OPEN / AWAITING REVIEW</span>
+          <span className={`${styles.metricValue} ${styles.metricAccent}`}>{loading ? '—' : displayStats.openComplaints}</span>
+          <span className={styles.metricNote}>SUBMITTED + UNDER REVIEW</span>
         </div>
 
         <div className={styles.metricCard}>
           <span className={styles.metricLabel}>RESOLUTION RATE</span>
           <span className={styles.metricValue}>{loading ? '—' : `${resolutionRate}%`}</span>
-          <span className={styles.metricNote}>{loading ? '' : `${displayStats.resolvedClusters} OF ${displayStats.totalClusters} CLUSTERS RESOLVED`}</span>
+          <span className={styles.metricNote}>{loading ? '' : `${displayStats.resolvedComplaints} OF ${displayStats.totalComplaints} RESOLVED`}</span>
         </div>
 
         <div className={styles.metricCard}>
-          <span className={styles.metricLabel}>CRITICAL INFRASTRUCTURE ALERTS</span>
+          <span className={styles.metricLabel}>CRITICAL / HIGH PRIORITY</span>
           <span className={styles.metricValue}>{loading ? '—' : String(displayStats.criticalAlerts).padStart(2, '0')}</span>
-          <span className={styles.metricNote}>HIGH/CRITICAL PRIORITY, UNRESOLVED</span>
+          <span className={styles.metricNote}>HIGH/CRITICAL PRIORITY, OPEN</span>
         </div>
       </div>
 
