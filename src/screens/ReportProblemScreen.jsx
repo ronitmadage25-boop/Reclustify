@@ -8,10 +8,10 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 export default function ReportProblemScreen({ onAnalyze }) {
   const { setCurrentScreen, userProfile } = useAuth()
   const [category, setCategory] = useState('IT & NETWORK')
-  const [location, setLocation] = useState('Science Block, Lab 3')
-  const [title, setTitle] = useState('Wi-Fi keeps dropping during practical sessions')
-  const [description, setDescription] = useState('Computers in row 2 and 4 cannot connect to the college network router. Multiple students cannot complete assignment uploads.')
-  const [severity, setSeverity] = useState('HIGH')
+  const [location, setLocation] = useState('')
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [severity, setSeverity] = useState('MEDIUM')
   const [error, setError] = useState('')
 
   // Image upload state
@@ -70,7 +70,7 @@ export default function ReportProblemScreen({ onAnalyze }) {
       description: description.trim(),
       severity,
       submittedAt: 'Just now',
-      status: 'IN PROGRESS',
+      status: 'SUBMITTED',
       // Pass the selected image file through to AIAnalysisPreviewScreen
       imageFile: imageFile || null,
     }

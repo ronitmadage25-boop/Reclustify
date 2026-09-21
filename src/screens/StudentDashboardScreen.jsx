@@ -1,12 +1,51 @@
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { fetchStudentDashboardStats, fetchAdminClusters } from '../services/db'
 import styles from './StudentScreens.module.css'
 
 export default function StudentDashboardScreen() {
-  const { userProfile, setCurrentScreen, studentReports, setActiveTrackingReport } = useAuth()
+  const { user, userProfile, setCurrentScreen, studentReports, setActiveTrackingReport } = useAuth()
+  const [stats, setStats] = useState({ totalReports: 0, openReports: 0, inProgressReports: 0, resolvedReports: 0 })
+  const [clusters, setClusters] = useState([])
+  const [loadingStats, setLoadingStats] = useState(true)
+  const [loadingClusters, setLoadingClusters] = useState(true)
+
+  const institutionId = userProfile?.collegeId
+
+  useEffect(() => {
+    if (!user?.id) return
+    setLoadingStats(true)
+    fetchStudentDashboardStats(user.id)
+      .then(setStats)
+      .finally(() => setLoadingStats(false))
+  }, [user?.id])
+
+  useEffect(() => {
+    if (!institutionId) {
+      setLoadingClusters(false)
+      return
+    }
+    setLoadingClusters(true)
+    fetchAdminClusters(institutionId)
+      .then((data) => {
+        // Show top 3 non-resolved clusters by priority score
+        const top = (data || [])
+          .filter((c) => c.status !== 'RESOLVED' && c.status !== 'CLOSED')
+          .slice(0, 3)
+        setClusters(top)
+      })
+      .finally(() => setLoadingClusters(false))
+  }, [institutionId])
 
   const handleTrackReport = (report) => {
     setActiveTrackingReport(report)
     setCurrentScreen('report-tracking')
+  }
+
+  const priorityBadgeClass = (priority) => {
+    if (priority === 'CRITICAL' || priority === 'HIGH') return styles.badgeHigh
+    if (priority === 'MEDIUM') return styles.badgeMed
+    return styles.badgeResolved
   }
 
   return (
@@ -19,7 +58,7 @@ export default function StudentDashboardScreen() {
             HELLO, {userProfile.studentDetails?.name?.toUpperCase() || 'STUDENT'}
           </h1>
           <p className={styles.bannerSub}>
-            CAMPUS: {userProfile.college?.toUpperCase() || 'MASSACHUSETTS INSTITUTE OF TECHNOLOGY'}
+            CAMPUS: {userProfile.college?.toUpperCase() || 'YOUR INSTITUTION'}
           </p>
         </div>
 
@@ -36,91 +75,82 @@ export default function StudentDashboardScreen() {
         </div>
       </div>
 
-      {/* Stats Bar */}
+      {/* Stats Bar — Real Data */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <span className={styles.statLabel}>ACTIVE CLUSTERS</span>
-          <span className={styles.statValue}>14</span>
-          <span className={styles.statDetail}>3 IDENTIFIED TODAY</span>
+          <span className={styles.statLabel}>MY TOTAL REPORTS</span>
+          <span className={styles.statValue}>{loadingStats ? '—' : stats.totalReports}</span>
+          <span className={styles.statDetail}>ALL SUBMITTED</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statLabel}>MY FILED REPORTS</span>
-          <span className={styles.statValue}>{studentReports.length}</span>
-          <span className={styles.statDetail}>TRACKED IN REAL TIME</span>
+          <span className={styles.statLabel}>OPEN / AWAITING</span>
+          <span className={styles.statValue}>{loadingStats ? '—' : stats.openReports}</span>
+          <span className={styles.statDetail}>SUBMITTED + UNDER REVIEW</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statLabel}>CAMPUS RESOLUTION RATE</span>
-          <span className={`${styles.statValue} ${styles.statAccent}`}>88%</span>
-          <span className={styles.statDetail}>AVG 2.4 DAYS TO FIX</span>
+          <span className={styles.statLabel}>IN PROGRESS</span>
+          <span className={`${styles.statValue} ${styles.statAccent}`}>{loadingStats ? '—' : stats.inProgressReports}</span>
+          <span className={styles.statDetail}>ASSIGNED + ACTIVE</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statLabel}>HIGH PRIORITY ISSUES</span>
-          <span className={styles.statValue}>03</span>
-          <span className={styles.statDetail}>UNDER INVESTIGATION</span>
+          <span className={styles.statLabel}>RESOLVED</span>
+          <span className={styles.statValue}>{loadingStats ? '—' : stats.resolvedReports}</span>
+          <span className={styles.statDetail}>CLOSED ISSUES</span>
         </div>
       </div>
 
       {/* Main Grid: Campus Clusters & My Reports */}
       <div className={styles.mainGrid}>
-        {/* Left: Active Campus Clusters */}
+        {/* Left: Active Campus Clusters — Real Data */}
         <div className={styles.colLeft}>
           <div className={styles.blockHeader}>
             <div>
               <h2 className={styles.blockTitle}>ACTIVE PROBLEM CLUSTERS</h2>
-              <span className={styles.blockSub}>SIMILAR STUDENT COMPLAINTS GROUPED AUTOMATICALLY</span>
+              <span className={styles.blockSub}>SIMILAR STUDENT COMPLAINTS GROUPED BY CATEGORY</span>
             </div>
-            <span className={styles.liveIndicator}>LIVE INTELLIGENCE</span>
+            <span className={styles.liveIndicator}>LIVE</span>
           </div>
 
           <div className={styles.clusterList}>
-            <div className={styles.clusterItem}>
-              <div className={styles.clusterMeta}>
-                <span className={styles.clusterId}>CLUSTER #C-104</span>
-                <span className={`${styles.badge} ${styles.badgeHigh}`}>HIGH PRIORITY</span>
+            {loadingClusters && (
+              <div style={{ padding: '32px', textAlign: 'center', color: '#999', fontSize: '11px', fontWeight: 800, letterSpacing: '0.1em' }}>
+                LOADING CLUSTERS...
               </div>
-              <h3 className={styles.clusterTitle}>LAB 3 WI-FI CONNECTIVITY & DROPOUTS</h3>
-              <p className={styles.clusterSummary}>
-                4 student reports converged around science block lab network equipment over 48 hours.
-              </p>
-              <div className={styles.clusterBottom}>
-                <span className={styles.clusterDept}>DEPT: IT INFRASTRUCTURE</span>
-                <span className={styles.clusterStatus}>STATUS: IN PROGRESS</span>
-              </div>
-            </div>
+            )}
 
-            <div className={styles.clusterItem}>
-              <div className={styles.clusterMeta}>
-                <span className={styles.clusterId}>CLUSTER #C-098</span>
-                <span className={`${styles.badge} ${styles.badgeMed}`}>MEDIUM PRIORITY</span>
+            {!loadingClusters && clusters.length === 0 && (
+              <div style={{ padding: '32px', textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.12em', color: '#FF3000', border: '1px solid #000', display: 'inline-block', padding: '6px 14px', marginBottom: '12px' }}>
+                  NO ACTIVE CLUSTERS
+                </div>
+                <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+                  No open problem clusters for your institution yet.
+                </p>
               </div>
-              <h3 className={styles.clusterTitle}>LIBRARY 3RD FLOOR HVAC OVERHEATING</h3>
-              <p className={styles.clusterSummary}>
-                7 complaints submitted regarding temperature controls in quiet study zone.
-              </p>
-              <div className={styles.clusterBottom}>
-                <span className={styles.clusterDept}>DEPT: CAMPUS FACILITIES</span>
-                <span className={styles.clusterStatus}>STATUS: ASSIGNED</span>
-              </div>
-            </div>
+            )}
 
-            <div className={styles.clusterItem}>
-              <div className={styles.clusterMeta}>
-                <span className={styles.clusterId}>CLUSTER #C-092</span>
-                <span className={`${styles.badge} ${styles.badgeResolved}`}>RESOLVED</span>
+            {!loadingClusters && clusters.map((cluster) => (
+              <div key={cluster.id} className={styles.clusterItem}>
+                <div className={styles.clusterMeta}>
+                  <span className={styles.clusterId}>CLUSTER #{cluster.cluster_key}</span>
+                  <span className={`${styles.badge} ${priorityBadgeClass(cluster.priority)}`}>
+                    {cluster.priority} PRIORITY
+                  </span>
+                </div>
+                <h3 className={styles.clusterTitle}>{cluster.title}</h3>
+                <p className={styles.clusterSummary}>
+                  {cluster.reports_count || 0} student report{(cluster.reports_count || 0) !== 1 ? 's' : ''} converged in {cluster.location || 'campus area'}.
+                </p>
+                <div className={styles.clusterBottom}>
+                  <span className={styles.clusterDept}>DEPT: {cluster.department || 'CAMPUS OPERATIONS'}</span>
+                  <span className={styles.clusterStatus}>STATUS: {cluster.status}</span>
+                </div>
               </div>
-              <h3 className={styles.clusterTitle}>NORTH DORM WATER PRESSURE MALFUNCTION</h3>
-              <p className={styles.clusterSummary}>
-                5 student complaints resolved following plumbing valve replacement.
-              </p>
-              <div className={styles.clusterBottom}>
-                <span className={styles.clusterDept}>DEPT: RESIDENTIAL HOUSING</span>
-                <span className={styles.clusterStatus}>STATUS: RESOLVED</span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Right: My Reports */}
+        {/* Right: My Reports — Real Data */}
         <div className={styles.colRight}>
           <div className={styles.blockHeader}>
             <div>
@@ -137,11 +167,11 @@ export default function StudentDashboardScreen() {
           </div>
 
           <div className={styles.myReportsList}>
-            {studentReports.map((report) => (
+            {studentReports.slice(0, 3).map((report) => (
               <div key={report.id} className={styles.reportCard}>
                 <div className={styles.reportTop}>
                   <span className={styles.reportId}>{report.id}</span>
-                  <span className={`${styles.badge} ${report.status === 'RESOLVED' ? styles.badgeResolved : styles.badgeProgress}`}>
+                  <span className={`${styles.badge} ${report.status === 'RESOLVED' || report.status === 'CLOSED' ? styles.badgeResolved : styles.badgeProgress}`}>
                     {report.status}
                   </span>
                 </div>
@@ -161,9 +191,29 @@ export default function StudentDashboardScreen() {
                 </div>
               </div>
             ))}
+
+            {studentReports.length === 0 && (
+              <div style={{ padding: '32px 0', textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.12em', color: '#FF3000', border: '1px solid #000', display: 'inline-block', padding: '6px 14px', marginBottom: '12px' }}>
+                  NO REPORTS YET
+                </div>
+                <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+                  You have not submitted any complaints yet.
+                </p>
+                <button
+                  type="button"
+                  className={styles.reportBtn}
+                  style={{ marginTop: '16px', fontSize: '10px' }}
+                  onClick={() => setCurrentScreen('report-problem')}
+                >
+                  <span>REPORT YOUR FIRST PROBLEM</span>
+                  <span className={styles.reportBtnIcon} aria-hidden="true">+</span>
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Prompt card */}
+          {/* Info card */}
           <div className={styles.helpCard}>
             <div className={styles.helpHeader}>CAMPUS INTELLIGENCE NOTICE</div>
             <p className={styles.helpText}>

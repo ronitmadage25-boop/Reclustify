@@ -3,27 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { fetchClusterDetails, updateClusterStatus, fetchComplaintAttachments, updateComplaintStatus } from '../services/db'
 import styles from './AdminScreens.module.css'
 
-// Fallback seed data for the demo cluster C-104 (shown when navigating from AdminDashboard)
-const FALLBACK_CLUSTER = {
-  id: 'b0000000-0000-0000-0000-000000000001',
-  cluster_key: 'C-104',
-  title: 'LAB 3 WI-FI CONNECTIVITY & DROPOUTS',
-  department: 'IT INFRASTRUCTURE',
-  location: 'Science Complex, Lab 3',
-  priority: 'HIGH',
-  priority_score: 82,
-  status: 'IN PROGRESS',
-  reports_count: 4,
-}
-
-const FALLBACK_COMPLAINTS = [
-  { id: 'REP-4091', text: '"Computers in row 2 and 4 cannot connect to the college network router."', time: '2 days ago', similarity: '94%' },
-  { id: 'REP-4088', text: '"Wi-Fi disconnects every 5 minutes in computer lab 3 during python practicals."', time: '2 days ago · 03:22 PM', similarity: '91%' },
-  { id: 'REP-4081', text: '"Cannot connect to campus Wi-Fi AP in science block lab 3."', time: '3 days ago · 11:05 AM', similarity: '88%' },
-  { id: 'REP-4075', text: '"Frequent internet timeouts on lab desktop workstations."', time: '3 days ago · 09:40 AM', similarity: '85%' },
-]
-
-export default function AdminIssueDetailsScreen({ clusterId = 'C-104', clusterDbId = null }) {
+export default function AdminIssueDetailsScreen({ clusterId = null, clusterDbId = null }) {
   const { setCurrentScreen } = useAuth()
   const [clusterData, setClusterData] = useState(null)
   const [complaints, setComplaints] = useState([])
@@ -38,24 +18,22 @@ export default function AdminIssueDetailsScreen({ clusterId = 'C-104', clusterDb
     async function load() {
       setLoading(true)
 
-      // Use the UUID if available, otherwise try to resolve from seed data
-      const dbId = clusterDbId || (clusterId === 'C-104' ? 'b0000000-0000-0000-0000-000000000001' : null)
+      const dbId = clusterDbId
 
       if (dbId) {
         const result = await fetchClusterDetails(dbId)
         if (result?.cluster) {
           setClusterData(result.cluster)
-          setCurrentStatus(result.cluster.status || 'IN PROGRESS')
+          setCurrentStatus(result.cluster.status || 'SUBMITTED')
           setComplaints(result.complaints || [])
           setLoading(false)
           return
         }
       }
 
-      // Fallback to seed data if DB fetch fails or no UUID known
-      setClusterData(FALLBACK_CLUSTER)
-      setCurrentStatus(FALLBACK_CLUSTER.status)
-      setComplaints(FALLBACK_COMPLAINTS)
+      // No cluster found — show empty state
+      setClusterData(null)
+      setComplaints([])
       setLoading(false)
     }
 
@@ -100,8 +78,33 @@ export default function AdminIssueDetailsScreen({ clusterId = 'C-104', clusterDb
     setTimeout(() => setStatusUpdated(false), 2500)
   }
 
-  const cluster = clusterData || FALLBACK_CLUSTER
-  const priorityScore = cluster.priority_score || 82
+  if (!loading && !clusterData) {
+    return (
+      <div className={styles.dashboard}>
+        <div className={styles.banner}>
+          <div className={styles.bannerLeft}>
+            <div className={styles.badge}>ISSUE DETAILS // NOT FOUND</div>
+            <h1 className={styles.bannerTitle}>CLUSTER NOT FOUND</h1>
+            <p className={styles.bannerSub}>
+              The requested cluster could not be loaded from the database.
+            </p>
+          </div>
+          <div className={styles.bannerRight}>
+            <button
+              type="button"
+              className={styles.secondaryBtn}
+              onClick={() => setCurrentScreen('admin-all-issues')}
+            >
+              ← BACK TO ALL ISSUES
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const cluster = clusterData || {}
+  const priorityScore = cluster.priority_score || 0
   const reportCount = cluster.reports_count || complaints.length
 
   return (

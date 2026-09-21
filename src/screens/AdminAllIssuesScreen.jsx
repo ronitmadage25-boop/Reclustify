@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { fetchAdminAllComplaints } from '../services/db'
+import { fetchAdminAllComplaints, subscribeToInstitutionComplaints } from '../services/db'
 import styles from './AdminScreens.module.css'
 
 const STATUS_COLORS = {
@@ -28,13 +28,39 @@ export default function AdminAllIssuesScreen({ onSelectCluster }) {
   const [categoryFilter, setCategoryFilter] = useState('ALL')
   const [priorityFilter, setPriorityFilter] = useState('ALL')
 
-  const institutionId = userProfile?.collegeId || 'a0000000-0000-0000-0000-000000000001'
+  const institutionId = userProfile?.collegeId
+  const channelRef = useRef(null)
 
   useEffect(() => {
+    if (!institutionId) {
+      setLoading(false)
+      return
+    }
     fetchAdminAllComplaints(institutionId)
       .then(setComplaints)
       .finally(() => setLoading(false))
-  }, [institutionId])
+
+    // Realtime subscription: refresh list when new complaints arrive or are updated
+    const channel = subscribeToInstitutionComplaints(
+      institutionId,
+      // onInsert
+      () => {
+        fetchAdminAllComplaints(institutionId).then(setComplaints)
+      },
+      // onUpdate
+      () => {
+        fetchAdminAllComplaints(institutionId).then(setComplaints)
+      }
+    )
+    channelRef.current = channel
+
+    return () => {
+      if (channelRef.current) {
+        channelRef.current.unsubscribe()
+        channelRef.current = null
+      }
+    }
+  }, [institutionId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = complaints.filter((c) => {
     const matchesSearch =
@@ -51,10 +77,11 @@ export default function AdminAllIssuesScreen({ onSelectCluster }) {
   })
 
   const handleInspectComplaint = (complaint) => {
-    // Open issue details for the cluster this complaint belongs to
     if (complaint.clusterDbId && onSelectCluster) {
+      // Navigate to cluster details view
       onSelectCluster(complaint.clusterId, complaint.clusterDbId)
     }
+    // Always navigate to issue details (even for complaints without a cluster)
     setCurrentScreen('admin-issue-details')
   }
 
@@ -212,6 +239,20 @@ export default function AdminAllIssuesScreen({ onSelectCluster }) {
                       }}
                     >
                       INSPECT →
+                    </button>
+                  )}
+                  {!complaint.clusterDbId && (
+                    <button
+                      type="button"
+                      onClick={() => handleInspectComplaint(complaint)}
+                      style={{
+                        fontSize: '9px', fontWeight: 800, letterSpacing: '0.12em',
+                        backgroundColor: '#808080', color: '#fff',
+                        border: 'none', padding: '5px 12px', cursor: 'pointer',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      VIEW →
                     </button>
                   )}
                 </div>

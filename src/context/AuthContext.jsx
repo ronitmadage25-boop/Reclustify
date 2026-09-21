@@ -412,13 +412,13 @@ export function AuthProvider({ children }) {
       const optimistic = {
         id: saved.ticket_number || complaintData.id,
         dbId: saved.id,
-        clusterId: saved.clusterKey || 'C-NEW',
+        clusterId: saved.clusterKey || null,
         clusterTitle: saved.clusterTitle || complaintData.title,
         title: complaintData.title,
         location: complaintData.location,
         category: complaintData.category,
         severity: complaintData.severity,
-        status: 'IN PROGRESS',
+        status: 'SUBMITTED',
         submittedAt: 'Just now',
         createdAt: new Date().toISOString(),
       }

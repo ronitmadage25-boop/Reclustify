@@ -4,27 +4,31 @@ import styles from './StudentScreens.module.css'
 
 export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
   const { setCurrentScreen, submitComplaintToDb } = useAuth()
-  const [clustering, setClustering] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [saveError, setSaveError] = useState('')
 
-  const activeDraft = draftReport || {
-    id: 'REP-4091',
-    title: 'Wi-Fi keeps dropping during practical sessions',
-    category: 'IT & NETWORK',
-    location: 'Science Block, Lab 3',
-    description: 'Computers in row 2 and 4 cannot connect to the college network router.',
-    severity: 'HIGH',
-    submittedAt: 'Just now',
-    status: 'IN PROGRESS',
+  // draftReport must always be provided via the ReportProblem → this screen flow
+  const activeDraft = draftReport
+
+  // If somehow landed here with no draft, redirect back
+  if (!activeDraft) {
+    setCurrentScreen('report-problem')
+    return null
+  }
+
+  const SEVERITY_COLORS = {
+    CRITICAL: '#FF3000',
+    HIGH: '#FF6B00',
+    MEDIUM: '#000000',
+    LOW: '#808080',
   }
 
   const handleConfirm = async () => {
-    setClustering(true)
+    setSubmitting(true)
     setSaveError('')
 
     try {
-      // Save to Supabase (or demo fallback)
-      // Pass imageFile as second argument so it gets uploaded with the complaint
+      // Submit complaint to Supabase. institution_id is enforced server-side by trigger.
       const saved = await submitComplaintToDb(
         {
           title: activeDraft.title,
@@ -36,11 +40,17 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
         activeDraft.imageFile || null
       )
 
+      if (!saved) {
+        setSaveError('Could not save your complaint. Please check your connection and try again.')
+        return
+      }
+
       const finalReport = {
         ...activeDraft,
-        id: saved?.ticket_number || activeDraft.id,
-        clusterId: saved?.clusterKey || 'C-104',
-        clusterTitle: saved?.clusterTitle || 'LAB 3 WI-FI CONNECTIVITY & DROPOUTS',
+        id: saved.ticket_number || activeDraft.id,
+        status: 'SUBMITTED',
+        clusterId: saved.clusterKey || null,
+        clusterTitle: saved.clusterTitle || activeDraft.title,
       }
 
       if (onConfirm) {
@@ -52,75 +62,81 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
       console.error('Error confirming complaint:', err)
       setSaveError('Could not save report. Please try again.')
     } finally {
-      setClustering(false)
+      setSubmitting(false)
     }
   }
 
   return (
     <div className={styles.formContainer}>
       <div className={styles.sectionHeader}>
-        <span className={styles.stepNum}>AI ANALYSIS // 02</span>
-        <span className={styles.tagline}>PATTERN RECOGNITION & CLUSTER MATCH</span>
+        <span className={styles.stepNum}>REVIEW & SUBMIT // 02</span>
+        <span className={styles.tagline}>CONFIRM YOUR COMPLAINT DETAILS</span>
       </div>
 
       <div className={styles.formCard}>
         <div className={styles.formCardHeader}>
-          <span className={`${styles.badge} ${styles.badgePulse}`}>RECLUSTIFY INTELLIGENCE ACTIVE</span>
-          <span className={styles.badgeSub}>SEMANTIC EMBEDDING ENGINE</span>
+          <span className={styles.badge}>REVIEW COMPLAINT</span>
+          <span className={styles.badgeSub}>CONFIRM BEFORE SUBMITTING</span>
         </div>
 
         <div className={styles.formBody}>
           <h2 className={styles.formTitle}>
-            SIMILARITY
+            CONFIRM &
             <br />
-            <span className={styles.titleAccent}>CLUSTER MATCHED.</span>
+            <span className={styles.titleAccent}>SUBMIT COMPLAINT.</span>
           </h2>
           <p className={styles.formSubtitle}>
-            Reclustify compared your report against active campus problem signals. Instead of opening an isolated ticket, your complaint has been grouped with related student reports.
+            Review the details below before submitting. Your complaint will be saved to the system and visible to administrators at your institution.
           </p>
 
-          {/* Analysis Comparison Card */}
+          {/* Complaint Details Review Card */}
           <div className={styles.analysisGrid}>
-            {/* Student's Report */}
-            <div className={styles.analysisBox}>
-              <span className={styles.boxTag}>YOUR NEW REPORT</span>
+            {/* Summary */}
+            <div className={styles.analysisBox} style={{ flex: 1 }}>
+              <span className={styles.boxTag}>YOUR COMPLAINT</span>
               <h4 className={styles.boxTitle}>{activeDraft.title}</h4>
               <p className={styles.boxDesc}>{activeDraft.description}</p>
               <div className={styles.boxMeta}>
-                <span>LOCATION: {activeDraft.location}</span>
-                <span>SEVERITY: {activeDraft.severity}</span>
+                <span>LOCATION: {activeDraft.location || '—'}</span>
+                <span style={{ color: SEVERITY_COLORS[activeDraft.severity] || '#000' }}>
+                  SEVERITY: {activeDraft.severity}
+                </span>
               </div>
             </div>
 
-            {/* Match Indicator */}
-            <div className={styles.matchIndicator}>
-              <div className={styles.matchScore}>89%</div>
-              <div className={styles.matchLabel}>SEMANTIC SIMILARITY</div>
-              <div className={styles.matchArrow}>→</div>
-            </div>
-
-            {/* Destination Cluster */}
+            {/* Category & Status */}
             <div className={`${styles.analysisBox} ${styles.matchedClusterBox}`}>
               <div className={styles.clusterBadgeRow}>
-                <span className={styles.clusterId}>CLUSTER MATCH</span>
-                <span className={`${styles.badge} ${styles.badgeHigh}`}>HIGH PRIORITY</span>
+                <span className={styles.clusterId}>COMPLAINT DETAILS</span>
               </div>
-              <h4 className={styles.boxTitle}>{activeDraft.category} CLUSTER</h4>
+              <h4 className={styles.boxTitle}>{activeDraft.category}</h4>
               <p className={styles.boxDesc}>
-                Related student complaints identified in this category. Your report will join or form a cluster for escalation.
+                Your complaint will be submitted to the campus administration team and grouped with related reports from your institution.
               </p>
               <div className={styles.boxMeta}>
                 <span>CATEGORY: {activeDraft.category}</span>
-                <span>CLUSTER ALGORITHM: ACTIVE</span>
+                <span>STATUS: WILL BE SET TO SUBMITTED</span>
               </div>
             </div>
           </div>
 
-          {/* Value callout */}
+          {/* Image preview if attached */}
+          {activeDraft.imageFile && (
+            <div style={{ marginTop: '16px', border: '1px solid #000' }}>
+              <div style={{ padding: '8px 12px', backgroundColor: '#000', color: '#fff', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em' }}>
+                ✓ EVIDENCE IMAGE ATTACHED — WILL UPLOAD WITH COMPLAINT
+              </div>
+              <div style={{ padding: '8px 12px', fontSize: '11px', color: '#666' }}>
+                {activeDraft.imageFile.name} · {(activeDraft.imageFile.size / 1024).toFixed(0)} KB
+              </div>
+            </div>
+          )}
+
+          {/* Info callout */}
           <div className={styles.systemCallout}>
-            <span className={styles.calloutTitle}>WHY THIS MATTERS</span>
+            <span className={styles.calloutTitle}>WHAT HAPPENS NEXT</span>
             <p className={styles.calloutText}>
-              By clustering your report, its institutional priority increases immediately. Campus staff will receive a consolidated problem brief instead of duplicate disjointed emails.
+              Your complaint will be saved with status SUBMITTED. Administrators at your institution will review it and update the status. You can track progress in My Reports.
             </p>
           </div>
 
@@ -131,7 +147,7 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
               type="button"
               className={styles.backBtn}
               onClick={() => setCurrentScreen('report-problem')}
-              disabled={clustering}
+              disabled={submitting}
             >
               ← EDIT REPORT
             </button>
@@ -139,16 +155,16 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
               type="button"
               className={styles.primaryBtn}
               onClick={handleConfirm}
-              disabled={clustering}
+              disabled={submitting}
             >
-              {clustering ? 'SAVING TO CAMPUS SYSTEM...' : 'CONFIRM & JOIN CLUSTER →'}
+              {submitting ? 'SUBMITTING...' : 'CONFIRM & SUBMIT COMPLAINT →'}
             </button>
           </div>
         </div>
 
         <div className={styles.formCardFooter}>
-          <span>CLUSTER ALGORITHM: COSINE VECTOR EMBEDDING</span>
-          <span>CAMPUS ROUTING: AUTOMATED</span>
+          <span>COMPLAINT STORED SECURELY IN SUPABASE</span>
+          <span>INSTITUTION-ISOLATED · RLS ENFORCED</span>
         </div>
       </div>
     </div>

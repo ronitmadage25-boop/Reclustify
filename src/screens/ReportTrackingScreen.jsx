@@ -61,16 +61,11 @@ function buildTimeline(status, report) {
 export default function ReportTrackingScreen() {
   const { activeTrackingReport, setCurrentScreen } = useAuth()
 
-  const report = activeTrackingReport || {
-    id: 'REP-4091',
-    clusterId: 'C-104',
-    title: 'Lab 3 Wi-Fi dropping connection during practical sessions',
-    location: 'Science Block, Lab 3',
-    category: 'IT & NETWORK',
-    submittedAt: '2 days ago',
-    status: 'IN PROGRESS',
-    severity: 'HIGH',
-    department: 'IT INFRASTRUCTURE',
+  // If no report is being tracked, go back to my-reports
+  const report = activeTrackingReport
+  if (!report) {
+    setCurrentScreen('my-reports')
+    return null
   }
 
   const TIMELINE_STEPS = buildTimeline(report.status, report)

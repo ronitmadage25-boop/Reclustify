@@ -4,13 +4,12 @@ import styles from './StudentScreens.module.css'
 export default function SubmissionSuccessScreen({ submittedReport }) {
   const { setCurrentScreen, setActiveTrackingReport } = useAuth()
 
-  const report = submittedReport || {
-    id: 'REP-4091',
-    clusterId: 'CLU-104',
-    title: 'Lab 3 Wi-Fi dropping connection during practical sessions',
-    location: 'Science Block, Lab 3',
-    status: 'IN PROGRESS',
-    severity: 'HIGH',
+  // submittedReport is always provided from the App.jsx flow.
+  // If it's null (direct navigation), redirect back.
+  const report = submittedReport
+  if (!report) {
+    setCurrentScreen('student-dashboard')
+    return null
   }
 
   const handleTrack = () => {
@@ -41,7 +40,10 @@ export default function SubmissionSuccessScreen({ submittedReport }) {
           </h2>
 
           <p className={styles.formSubtitle}>
-            Your complaint was verified and attached to active campus issue Cluster #{report.clusterId || 'C-104'}. The responsible department has been notified of this high-frequency recurrence.
+            Your complaint has been submitted to campus administration.
+            {report.clusterId
+              ? ` It has been grouped into Cluster #${report.clusterId} with similar reports.`
+              : ' It will be reviewed and grouped with similar reports shortly.'}
           </p>
 
           <div className={styles.ticketSummary}>
@@ -51,15 +53,17 @@ export default function SubmissionSuccessScreen({ submittedReport }) {
             </div>
             <div className={styles.ticketRow}>
               <span className={styles.ticketLabel}>LINKED CLUSTER</span>
-              <span className={styles.ticketValue}>CLUSTER #{report.clusterId || 'C-104'}</span>
+              <span className={styles.ticketValue}>
+                {report.clusterId ? `CLUSTER #${report.clusterId}` : 'PENDING CLUSTER ASSIGNMENT'}
+              </span>
             </div>
             <div className={styles.ticketRow}>
               <span className={styles.ticketLabel}>ASSIGNED TO</span>
-              <span className={styles.ticketValue}>IT INFRASTRUCTURE DEPARTMENT</span>
+              <span className={styles.ticketValue}>{report.clusterTitle || report.category || 'CAMPUS OPERATIONS'}</span>
             </div>
             <div className={styles.ticketRow}>
               <span className={styles.ticketLabel}>CURRENT STATUS</span>
-              <span className={`${styles.ticketValue} ${styles.ticketAccent}`}>IN PROGRESS</span>
+              <span className={`${styles.ticketValue} ${styles.ticketAccent}`}>{report.status || 'SUBMITTED'}</span>
             </div>
           </div>
 

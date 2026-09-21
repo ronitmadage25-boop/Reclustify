@@ -337,6 +337,52 @@ function generateTicketNumber() {
 }
 
 /**
+ * Fetches real dashboard statistics for a specific student.
+ * Returns { totalReports, openReports, inProgressReports, resolvedReports }
+ * All counts are derived from the actual complaints table.
+ */
+export async function fetchStudentDashboardStats(userId) {
+  if (!userId || userId.startsWith('google-eval-')) {
+    return { totalReports: 0, openReports: 0, inProgressReports: 0, resolvedReports: 0 }
+  }
+
+  try {
+    const { count: total } = await supabase
+      .from('complaints')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+
+    const { count: open } = await supabase
+      .from('complaints')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .in('status', ['SUBMITTED', 'UNDER REVIEW'])
+
+    const { count: inProgress } = await supabase
+      .from('complaints')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .in('status', ['ASSIGNED', 'IN PROGRESS'])
+
+    const { count: resolved } = await supabase
+      .from('complaints')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .in('status', ['RESOLVED', 'CLOSED'])
+
+    return {
+      totalReports: total || 0,
+      openReports: open || 0,
+      inProgressReports: inProgress || 0,
+      resolvedReports: resolved || 0,
+    }
+  } catch (err) {
+    console.error('fetchStudentDashboardStats exception:', err)
+    return { totalReports: 0, openReports: 0, inProgressReports: 0, resolvedReports: 0 }
+  }
+}
+
+/**
  * Submits a new student complaint to Supabase.
  * Attempts to auto-assign to an existing open cluster for the same institution+category.
  * If no matching cluster exists, creates a new one.
@@ -344,12 +390,13 @@ function generateTicketNumber() {
  * Returns the saved complaint row or null on failure.
  */
 export async function submitComplaint(userId, institutionId, complaintData) {
-  if (!userId || !institutionId || userId.startsWith('google-eval-')) {
+  // Only gate on userId — the DB trigger enforces institution_id server-side
+  if (!userId || userId.startsWith('google-eval-')) {
     // Demo / eval mode — return a mock complaint so the UI still works
     return {
       id: crypto.randomUUID?.() || `demo-${Date.now()}`,
       user_id: userId,
-      institution_id: institutionId,
+      institution_id: institutionId || null,
       cluster_id: null,
       ticket_number: generateTicketNumber(),
       title: complaintData.title,
@@ -731,8 +778,7 @@ export async function fetchAdminAllComplaints(institutionId) {
 
 /**
  * Fetches summary metrics for the AdminDashboardScreen.
- * Returns { totalComplaints, openComplaints, inProgressComplaints, resolvedComplaints, criticalAlerts }
- * All from real database data — no hardcoded values.
+ * Returns per-status counts and totals — all from real DB data.
  */
 export async function fetchAdminDashboardStats(institutionId) {
   if (!institutionId) return null
@@ -743,17 +789,29 @@ export async function fetchAdminDashboardStats(institutionId) {
       .select('*', { count: 'exact', head: true })
       .eq('institution_id', institutionId)
 
-    const { count: openComplaints } = await supabase
+    const { count: submittedComplaints } = await supabase
       .from('complaints')
       .select('*', { count: 'exact', head: true })
       .eq('institution_id', institutionId)
-      .in('status', ['SUBMITTED', 'UNDER REVIEW'])
+      .eq('status', 'SUBMITTED')
+
+    const { count: underReviewComplaints } = await supabase
+      .from('complaints')
+      .select('*', { count: 'exact', head: true })
+      .eq('institution_id', institutionId)
+      .eq('status', 'UNDER REVIEW')
+
+    const { count: assignedComplaints } = await supabase
+      .from('complaints')
+      .select('*', { count: 'exact', head: true })
+      .eq('institution_id', institutionId)
+      .eq('status', 'ASSIGNED')
 
     const { count: inProgressComplaints } = await supabase
       .from('complaints')
       .select('*', { count: 'exact', head: true })
       .eq('institution_id', institutionId)
-      .in('status', ['ASSIGNED', 'IN PROGRESS'])
+      .eq('status', 'IN PROGRESS')
 
     const { count: resolvedComplaints } = await supabase
       .from('complaints')
@@ -768,17 +826,121 @@ export async function fetchAdminDashboardStats(institutionId) {
       .in('priority', ['HIGH', 'CRITICAL'])
       .not('status', 'in', '("RESOLVED","CLOSED")')
 
+    // Count open clusters vs resolved clusters
+    const { count: totalClusters } = await supabase
+      .from('clusters')
+      .select('*', { count: 'exact', head: true })
+      .eq('institution_id', institutionId)
+
+    const { count: resolvedClusters } = await supabase
+      .from('clusters')
+      .select('*', { count: 'exact', head: true })
+      .eq('institution_id', institutionId)
+      .in('status', ['RESOLVED', 'CLOSED'])
+
+    const openComplaints = (submittedComplaints || 0) + (underReviewComplaints || 0)
+
     return {
       totalComplaints: totalComplaints || 0,
-      openComplaints: openComplaints || 0,
+      submittedComplaints: submittedComplaints || 0,
+      underReviewComplaints: underReviewComplaints || 0,
+      assignedComplaints: assignedComplaints || 0,
+      openComplaints,
       inProgressComplaints: inProgressComplaints || 0,
       resolvedComplaints: resolvedComplaints || 0,
       criticalAlerts: criticalAlerts || 0,
+      totalClusters: totalClusters || 0,
+      resolvedClusters: resolvedClusters || 0,
     }
   } catch (err) {
     console.error('fetchAdminDashboardStats exception:', err)
     return null
   }
+}
+
+/**
+ * Fetches the N most recent complaints for an institution.
+ * Used by the admin dashboard recent complaints feed.
+ */
+export async function fetchAdminRecentComplaints(institutionId, limit = 5) {
+  if (!institutionId) return []
+
+  try {
+    const { data, error } = await supabase
+      .from('complaints')
+      .select('id, ticket_number, title, category, status, priority, location, created_at')
+      .eq('institution_id', institutionId)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.warn('Error fetching recent complaints:', error)
+      return []
+    }
+
+    return (data || []).map((c) => ({
+      id: c.id,
+      ticketNumber: c.ticket_number,
+      title: c.title,
+      category: c.category,
+      status: c.status,
+      priority: c.priority || 'MEDIUM',
+      location: c.location || '',
+      submittedAt: formatRelativeTime(c.created_at),
+      createdAt: c.created_at,
+    }))
+  } catch (err) {
+    console.error('fetchAdminRecentComplaints exception:', err)
+    return []
+  }
+}
+
+/**
+ * Subscribes to real-time complaint insertions for a specific institution.
+ * Returns the Supabase channel object (call .unsubscribe() to clean up).
+ * The callback receives the new complaint record.
+ *
+ * Usage:
+ *   const channel = subscribeToInstitutionComplaints(institutionId, (payload) => { ... })
+ *   // cleanup:
+ *   channel.unsubscribe()
+ */
+export function subscribeToInstitutionComplaints(institutionId, onInsert, onUpdate) {
+  if (!institutionId) return null
+
+  const channel = supabase
+    .channel(`complaints:institution:${institutionId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'complaints',
+        filter: `institution_id=eq.${institutionId}`,
+      },
+      (payload) => {
+        if (onInsert) onInsert(payload.new)
+      }
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'complaints',
+        filter: `institution_id=eq.${institutionId}`,
+      },
+      (payload) => {
+        if (onUpdate) onUpdate(payload.new)
+      }
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log(`Realtime: subscribed to complaints for institution ${institutionId}`)
+      }
+    })
+
+  return channel
 }
 
 /**
