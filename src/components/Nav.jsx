@@ -3,9 +3,16 @@ import { useAuth } from '../context/AuthContext'
 import styles from './Nav.module.css'
 
 export default function Nav() {
-  const { session, userRole, setCurrentScreen, setAuthModalOpen, signOut } = useAuth()
+  const { session, userRole, setCurrentScreen, setAuthModalOpen, signOut, userProfile } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const getDashboardScreen = () => {
+    if (userProfile?.onboardingComplete && userProfile?.collegeId) {
+      return userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard'
+    }
+    return 'role-selection'
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,7 +77,7 @@ export default function Nav() {
             <div className={styles.authNavGroup}>
               <button
                 className={styles.ctaButton}
-                onClick={() => setCurrentScreen(userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard')}
+                onClick={() => setCurrentScreen(getDashboardScreen())}
                 type="button"
                 aria-label="Go to Dashboard"
               >
@@ -151,7 +158,7 @@ export default function Nav() {
                 className={styles.mobileCtaButton}
                 type="button"
                 onClick={() => {
-                  setCurrentScreen(userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard')
+                  setCurrentScreen(getDashboardScreen())
                   setMenuOpen(false)
                 }}
               >

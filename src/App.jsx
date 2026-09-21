@@ -50,6 +50,7 @@ export default function App() {
   const [submittedReport, setSubmittedReport] = useState(null)
   const [selectedClusterId, setSelectedClusterId] = useState('C-104')
   const [selectedClusterDbId, setSelectedClusterDbId] = useState(null)
+  const [selectedComplaintId, setSelectedComplaintId] = useState(null)
 
   // Unauthenticated route protection
   useEffect(() => {
@@ -183,6 +184,13 @@ export default function App() {
             onSelectCluster={(cKey, cDbId) => {
               setSelectedClusterId(cKey)
               setSelectedClusterDbId(cDbId || null)
+              setSelectedComplaintId(null)
+              setCurrentScreen('admin-issue-details')
+            }}
+            onSelectComplaint={(cId) => {
+              setSelectedComplaintId(cId)
+              setSelectedClusterId(null)
+              setSelectedClusterDbId(null)
               setCurrentScreen('admin-issue-details')
             }}
           />
@@ -193,12 +201,25 @@ export default function App() {
             onSelectCluster={(cKey, cDbId) => {
               setSelectedClusterId(cKey)
               setSelectedClusterDbId(cDbId || null)
+              setSelectedComplaintId(null)
+              setCurrentScreen('admin-issue-details')
+            }}
+            onSelectComplaint={(cId) => {
+              setSelectedComplaintId(cId)
+              setSelectedClusterId(null)
+              setSelectedClusterDbId(null)
               setCurrentScreen('admin-issue-details')
             }}
           />
         )
       case 'admin-issue-details':
-        return <AdminIssueDetailsScreen clusterId={selectedClusterId} clusterDbId={selectedClusterDbId} />
+        return (
+          <AdminIssueDetailsScreen
+            clusterId={selectedClusterId}
+            clusterDbId={selectedClusterDbId}
+            complaintId={selectedComplaintId}
+          />
+        )
       case 'admin-analytics':
         return <AdminAnalyticsScreen />
       case 'admin-departments':
@@ -212,6 +233,13 @@ export default function App() {
             onSelectCluster={(cKey, cDbId) => {
               setSelectedClusterId(cKey)
               setSelectedClusterDbId(cDbId || null)
+              setSelectedComplaintId(null)
+              setCurrentScreen('admin-issue-details')
+            }}
+            onSelectComplaint={(cId) => {
+              setSelectedComplaintId(cId)
+              setSelectedClusterId(null)
+              setSelectedClusterDbId(null)
               setCurrentScreen('admin-issue-details')
             }}
           />

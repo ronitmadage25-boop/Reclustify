@@ -17,7 +17,7 @@ const STATUS_COLORS = {
   'CLOSED':       { bg: '#F5F5F5', color: '#616161' },
 }
 
-export default function AdminDashboardScreen({ onSelectCluster }) {
+export default function AdminDashboardScreen({ onSelectCluster, onSelectComplaint }) {
   const { userProfile, setCurrentScreen } = useAuth()
   const [topClusters, setTopClusters] = useState([])
   const [recentComplaints, setRecentComplaints] = useState([])
@@ -87,6 +87,13 @@ export default function AdminDashboardScreen({ onSelectCluster }) {
     setCurrentScreen('admin-issue-details')
   }
 
+  const handleOpenComplaint = (complaintId) => {
+    if (onSelectComplaint) {
+      onSelectComplaint(complaintId)
+    }
+    setCurrentScreen('admin-issue-details')
+  }
+
   const displayStats = {
     totalComplaints: stats?.totalComplaints ?? 0,
     openComplaints: stats?.openComplaints ?? 0,
@@ -110,11 +117,20 @@ export default function AdminDashboardScreen({ onSelectCluster }) {
       <div className={styles.dashboard}>
         <div className={styles.banner}>
           <div className={styles.bannerLeft}>
-            <div className={styles.badge}>ADMINISTRATIVE DASHBOARD // ERROR</div>
+            <div className={styles.badge}>ADMINISTRATIVE ONBOARDING REQUIRED</div>
             <h1 className={styles.bannerTitle}>NO INSTITUTION ASSIGNED</h1>
             <p className={styles.bannerSub}>
-              Your administrator account is not linked to an institution. Please complete onboarding.
+              Your administrator account is not linked to a campus institution yet. Please complete onboarding to access live data.
             </p>
+          </div>
+          <div className={styles.bannerRight}>
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={() => setCurrentScreen('role-selection')}
+            >
+              START ONBOARDING →
+            </button>
           </div>
         </div>
       </div>
@@ -279,14 +295,36 @@ export default function AdminDashboardScreen({ onSelectCluster }) {
                 {recentComplaints.map((c) => {
                   const statusStyle = STATUS_COLORS[c.status] || STATUS_COLORS['SUBMITTED']
                   return (
-                    <div key={c.id} style={{ padding: '10px 14px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                    <div
+                      key={c.id}
+                      onClick={() => handleOpenComplaint(c.id)}
+                      style={{
+                        padding: '12px 14px',
+                        borderBottom: '1px solid #f0f0f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '8px',
+                        flexWrap: 'wrap',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fafafa' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Inspect complaint ${c.ticketNumber}`}
+                    >
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
                         <span style={{ fontSize: '12px', fontWeight: 800, color: '#000' }}>{c.title}</span>
                         <span style={{ fontSize: '10px', color: '#808080', letterSpacing: '0.05em' }}>{c.ticketNumber} · {c.category} · {c.submittedAt}</span>
                       </div>
-                      <span style={{ display: 'inline-block', padding: '3px 8px', backgroundColor: statusStyle.bg, color: statusStyle.color, fontSize: '9px', fontWeight: 800, letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
-                        {c.status}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ display: 'inline-block', padding: '3px 8px', backgroundColor: statusStyle.bg, color: statusStyle.color, fontSize: '9px', fontWeight: 800, letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+                          {c.status}
+                        </span>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#000' }}>→</span>
+                      </div>
                     </div>
                   )
                 })}

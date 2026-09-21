@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { fetchClusterDetails, updateClusterStatus, fetchComplaintAttachments, updateComplaintStatus } from '../services/db'
+import { fetchClusterDetails, fetchComplaintDetails, updateClusterStatus, fetchComplaintAttachments, updateComplaintStatus } from '../services/db'
 import styles from './AdminScreens.module.css'
 
-export default function AdminIssueDetailsScreen({ clusterId = null, clusterDbId = null }) {
+export default function AdminIssueDetailsScreen({ clusterId = null, clusterDbId = null, complaintId = null }) {
   const { setCurrentScreen } = useAuth()
   const [clusterData, setClusterData] = useState(null)
   const [complaints, setComplaints] = useState([])
   const [loading, setLoading] = useState(true)
-  const [currentStatus, setCurrentStatus] = useState('IN PROGRESS')
+  const [currentStatus, setCurrentStatus] = useState('SUBMITTED')
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [statusUpdated, setStatusUpdated] = useState(false)
   // Map: complaintDbId → array of attachment objects with signedUrl
@@ -18,8 +18,39 @@ export default function AdminIssueDetailsScreen({ clusterId = null, clusterDbId 
     async function load() {
       setLoading(true)
 
-      const dbId = clusterDbId
+      // 1. If individual complaint ID provided, load it directly
+      if (complaintId) {
+        const comp = await fetchComplaintDetails(complaintId)
+        if (comp) {
+          setClusterData({
+            id: comp.id,
+            cluster_key: comp.ticketNumber,
+            title: comp.title,
+            department: comp.department,
+            location: comp.location,
+            category: comp.category,
+            priority: comp.priority,
+            status: comp.status,
+            reports_count: 1,
+            isIndividualComplaint: true,
+          })
+          setCurrentStatus(comp.status || 'SUBMITTED')
+          setComplaints([
+            {
+              id: comp.ticketNumber,
+              dbId: comp.id,
+              text: comp.description,
+              time: comp.submittedAt || 'Recent',
+              similarity: '100%',
+            },
+          ])
+          setLoading(false)
+          return
+        }
+      }
 
+      // 2. If cluster DB ID provided, load cluster
+      const dbId = clusterDbId
       if (dbId) {
         const result = await fetchClusterDetails(dbId)
         if (result?.cluster) {
@@ -31,14 +62,14 @@ export default function AdminIssueDetailsScreen({ clusterId = null, clusterDbId 
         }
       }
 
-      // No cluster found — show empty state
+      // No complaint or cluster found — show empty state
       setClusterData(null)
       setComplaints([])
       setLoading(false)
     }
 
     load()
-  }, [clusterDbId, clusterId])
+  }, [clusterDbId, clusterId, complaintId])
 
   // After complaints load, fetch attachments for each one (only real DB IDs)
   useEffect(() => {
@@ -67,9 +98,11 @@ export default function AdminIssueDetailsScreen({ clusterId = null, clusterDbId 
     setStatusUpdating(true)
     setCurrentStatus(newStatus)
 
-    const dbId = clusterData?.id || clusterDbId
-    if (dbId) {
-      // Update the cluster status + cascade to all complaints in it
+    if (complaintId || clusterData?.isIndividualComplaint) {
+      const targetId = complaintId || clusterData?.id
+      await updateComplaintStatus(targetId, { status: newStatus })
+    } else if (clusterData?.id || clusterDbId) {
+      const dbId = clusterData?.id || clusterDbId
       await updateClusterStatus(dbId, newStatus)
     }
 
@@ -84,9 +117,9 @@ export default function AdminIssueDetailsScreen({ clusterId = null, clusterDbId 
         <div className={styles.banner}>
           <div className={styles.bannerLeft}>
             <div className={styles.badge}>ISSUE DETAILS // NOT FOUND</div>
-            <h1 className={styles.bannerTitle}>CLUSTER NOT FOUND</h1>
+            <h1 className={styles.bannerTitle}>ISSUE NOT FOUND</h1>
             <p className={styles.bannerSub}>
-              The requested cluster could not be loaded from the database.
+              The requested issue or cluster could not be loaded from the database.
             </p>
           </div>
           <div className={styles.bannerRight}>

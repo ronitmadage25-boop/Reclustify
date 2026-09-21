@@ -19,7 +19,7 @@ const PRIORITY_COLORS = {
   'LOW':      '#808080',
 }
 
-export default function AdminAllIssuesScreen({ onSelectCluster }) {
+export default function AdminAllIssuesScreen({ onSelectCluster, onSelectComplaint }) {
   const { setCurrentScreen, userProfile } = useAuth()
   const [complaints, setComplaints] = useState([])
   const [loading, setLoading] = useState(true)
@@ -77,11 +77,14 @@ export default function AdminAllIssuesScreen({ onSelectCluster }) {
   })
 
   const handleInspectComplaint = (complaint) => {
+    if (onSelectComplaint) {
+      onSelectComplaint(complaint.id)
+    }
     if (complaint.clusterDbId && onSelectCluster) {
       // Navigate to cluster details view
       onSelectCluster(complaint.clusterId, complaint.clusterDbId)
     }
-    // Always navigate to issue details (even for complaints without a cluster)
+    // Always navigate to issue details
     setCurrentScreen('admin-issue-details')
   }
 

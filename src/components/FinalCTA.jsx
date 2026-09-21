@@ -3,9 +3,16 @@ import { useAuth } from '../context/AuthContext'
 import styles from './FinalCTA.module.css'
 
 export default function FinalCTA() {
-  const { session, userRole, setCurrentScreen, setAuthModalOpen } = useAuth()
+  const { session, userRole, setCurrentScreen, setAuthModalOpen, userProfile } = useAuth()
   const sectionRef = useRef(null)
   const [visible, setVisible] = useState(false)
+
+  const getDashboardScreen = () => {
+    if (userProfile?.onboardingComplete && userProfile?.collegeId) {
+      return userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard'
+    }
+    return 'role-selection'
+  }
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -61,7 +68,7 @@ export default function FinalCTA() {
               <button
                 className={styles.ctaButton}
                 type="button"
-                onClick={() => setCurrentScreen(userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard')}
+                onClick={() => setCurrentScreen(getDashboardScreen())}
                 aria-label="Enter Dashboard"
               >
                 <span>ENTER DASHBOARD</span>

@@ -15,6 +15,9 @@ export default function AppHeader() {
   }
 
   const collegeDisplay = userProfile.college || 'CAMPUS INTELLIGENCE'
+  const defaultHome = (userProfile?.onboardingComplete && userProfile?.collegeId)
+    ? (isAdmin ? 'admin-dashboard' : 'student-dashboard')
+    : 'role-selection'
 
   return (
     <header className={styles.header} role="banner">
@@ -24,7 +27,7 @@ export default function AppHeader() {
           <button
             type="button"
             className={styles.brandBtn}
-            onClick={() => handleNav(isAdmin ? 'admin-dashboard' : 'student-dashboard')}
+            onClick={() => handleNav(defaultHome)}
             aria-label="Reclustify Dashboard Home"
           >
             <span className={styles.wordmark}>RECLUSTIFY</span>

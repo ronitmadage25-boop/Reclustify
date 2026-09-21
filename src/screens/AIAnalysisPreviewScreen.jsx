@@ -28,8 +28,8 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
     setSaveError('')
 
     try {
-      // Submit complaint to Supabase. institution_id is enforced server-side by trigger.
-      const saved = await submitComplaintToDb(
+      // Submit complaint to Supabase. Validates authenticated student & institution.
+      const res = await submitComplaintToDb(
         {
           title: activeDraft.title,
           description: activeDraft.description,
@@ -40,17 +40,20 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
         activeDraft.imageFile || null
       )
 
-      if (!saved) {
-        setSaveError('Could not save your complaint. Please check your connection and try again.')
+      if (!res || !res.success) {
+        const errorMsg = res?.error || 'Could not save your complaint to the database. Please check your connection and try again.'
+        console.error('Complaint submission failed:', res)
+        setSaveError(errorMsg)
         return
       }
 
+      const saved = res.data
       const finalReport = {
         ...activeDraft,
         id: saved.ticket_number || activeDraft.id,
         status: 'SUBMITTED',
-        clusterId: saved.clusterKey || null,
-        clusterTitle: saved.clusterTitle || activeDraft.title,
+        clusterId: saved.cluster_id || null,
+        clusterTitle: saved.title || activeDraft.title,
       }
 
       if (onConfirm) {
@@ -60,7 +63,7 @@ export default function AIAnalysisPreviewScreen({ draftReport, onConfirm }) {
       }
     } catch (err) {
       console.error('Error confirming complaint:', err)
-      setSaveError('Could not save report. Please try again.')
+      setSaveError(err.message || 'Unexpected exception while saving report. Please try again.')
     } finally {
       setSubmitting(false)
     }

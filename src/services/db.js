@@ -318,7 +318,7 @@ export async function verifyAdminSecurityCode(userId, enteredCode) {
       })
       .eq('id', userId)
 
-    return { verified: true }
+    return { verified: true, institutionId: request?.institution_id }
   } catch (err) {
     console.error('verifyAdminSecurityCode exception:', err)
     return { verified: enteredCode === '882910' }
@@ -384,138 +384,132 @@ export async function fetchStudentDashboardStats(userId) {
 
 /**
  * Submits a new student complaint to Supabase.
- * Attempts to auto-assign to an existing open cluster for the same institution+category.
- * If no matching cluster exists, creates a new one.
- *
- * Returns the saved complaint row or null on failure.
+ * Strictly verifies the authenticated user and their institution.
+ * Returns { success: true, data: complaint } on success, or { success: false, error: string } on failure.
  */
-export async function submitComplaint(userId, institutionId, complaintData) {
-  // Only gate on userId — the DB trigger enforces institution_id server-side
-  if (!userId || userId.startsWith('google-eval-')) {
-    // Demo / eval mode — return a mock complaint so the UI still works
+export async function submitComplaint(userId, passedInstitutionId, complaintData) {
+  // Demo / eval mode — return a mock complaint so the UI still works
+  if (userId && userId.startsWith('google-eval-')) {
     return {
-      id: crypto.randomUUID?.() || `demo-${Date.now()}`,
-      user_id: userId,
-      institution_id: institutionId || null,
-      cluster_id: null,
-      ticket_number: generateTicketNumber(),
-      title: complaintData.title,
-      description: complaintData.description,
-      category: complaintData.category,
-      location: complaintData.location,
-      severity: complaintData.severity,
-      status: 'SUBMITTED',
-      priority: 'MEDIUM',
-      created_at: new Date().toISOString(),
-    }
-  }
-
-  try {
-    // 1. Find an existing open cluster for this category in this institution
-    const { data: existingCluster } = await supabase
-      .from('clusters')
-      .select('id, cluster_key, title, reports_count')
-      .eq('institution_id', institutionId)
-      .eq('category', complaintData.category)
-      .neq('status', 'RESOLVED')
-      .order('priority_score', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    let clusterId = null
-    let clusterKey = null
-    let clusterTitle = null
-
-    if (existingCluster) {
-      // Join existing cluster
-      clusterId = existingCluster.id
-      clusterKey = existingCluster.cluster_key
-      clusterTitle = existingCluster.title
-
-      // Increment cluster report count and raise priority
-      const newCount = (existingCluster.reports_count || 0) + 1
-      const priorityScore = Math.min(100, 40 + newCount * 8)
-      const priority =
-        priorityScore >= 80 ? 'HIGH' : priorityScore >= 55 ? 'MEDIUM' : 'LOW'
-
-      await supabase
-        .from('clusters')
-        .update({
-          reports_count: newCount,
-          priority_score: priorityScore,
-          priority,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', clusterId)
-    } else {
-      // Create a new cluster for this complaint
-      const clusterNum = `C-${Math.floor(100 + Math.random() * 900)}`
-      const newCluster = {
-        institution_id: institutionId,
-        cluster_key: clusterNum,
-        title: complaintData.title.toUpperCase(),
-        department: categoryToDepartment(complaintData.category),
-        location: complaintData.location,
-        category: complaintData.category,
-        priority: complaintData.severity === 'CRITICAL' || complaintData.severity === 'HIGH' ? 'HIGH' : 'MEDIUM',
-        priority_score: complaintData.severity === 'CRITICAL' ? 85 : complaintData.severity === 'HIGH' ? 70 : 50,
-        status: 'IN PROGRESS',
-        reports_count: 1,
-        days_active: 0,
-      }
-
-      const { data: createdCluster, error: clusterErr } = await supabase
-        .from('clusters')
-        .insert(newCluster)
-        .select()
-        .maybeSingle()
-
-      if (clusterErr) {
-        console.warn('Could not create cluster:', clusterErr)
-      } else if (createdCluster) {
-        clusterId = createdCluster.id
-        clusterKey = createdCluster.cluster_key
-        clusterTitle = createdCluster.title
-      }
-    }
-
-    // 2. Insert the complaint with initial status SUBMITTED
-    const ticketNumber = generateTicketNumber()
-    const { data: complaint, error: complaintErr } = await supabase
-      .from('complaints')
-      .insert({
+      success: true,
+      data: {
+        id: crypto.randomUUID?.() || `demo-${Date.now()}`,
         user_id: userId,
-        institution_id: institutionId,
-        cluster_id: clusterId,
-        ticket_number: ticketNumber,
+        institution_id: passedInstitutionId || null,
+        cluster_id: null,
+        ticket_number: generateTicketNumber(),
         title: complaintData.title,
         description: complaintData.description,
         category: complaintData.category,
         location: complaintData.location,
         severity: complaintData.severity,
         status: 'SUBMITTED',
-        priority: complaintData.severity === 'CRITICAL' ? 'CRITICAL'
-               : complaintData.severity === 'HIGH' ? 'HIGH'
-               : complaintData.severity === 'LOW' ? 'LOW'
-               : 'MEDIUM',
-        department: categoryToDepartment(complaintData.category),
-      })
+        priority: 'MEDIUM',
+        created_at: new Date().toISOString(),
+      },
+    }
+  }
+
+  try {
+    // STEP 6: VERIFY AUTHENTICATED USER
+    const { data: authData, error: authErr } = await supabase.auth.getUser()
+    const activeUid = authData?.user?.id || userId
+    if (!activeUid) {
+      return { success: false, error: 'User session expired or not authenticated. Please sign in.' }
+    }
+
+    // STEP 7 & 8: VERIFY STUDENT PROFILE & INSTITUTION
+    let realInstitutionId = passedInstitutionId
+
+    // Try reading institution from profiles table
+    const { data: profileRec } = await supabase
+      .from('profiles')
+      .select('institution_id, role')
+      .eq('id', activeUid)
+      .maybeSingle()
+
+    if (profileRec?.institution_id) {
+      realInstitutionId = profileRec.institution_id
+    } else {
+      // Check student_profiles table
+      const { data: stuRec } = await supabase
+        .from('student_profiles')
+        .select('institution_id')
+        .eq('user_id', activeUid)
+        .maybeSingle()
+      if (stuRec?.institution_id) {
+        realInstitutionId = stuRec.institution_id
+      }
+    }
+
+    if (!realInstitutionId) {
+      return {
+        success: false,
+        error: 'Student profile is incomplete or no campus institution assigned. Please complete onboarding first.',
+      }
+    }
+
+    // STEP 9-11: VERIFY SCHEMA & INSERT COMPLAINT
+    // Per production requirements: No fake clusters or similarity scores!
+    const ticketNumber = generateTicketNumber()
+    const priority =
+      complaintData.severity === 'CRITICAL'
+        ? 'CRITICAL'
+        : complaintData.severity === 'HIGH'
+        ? 'HIGH'
+        : complaintData.severity === 'LOW'
+        ? 'LOW'
+        : 'MEDIUM'
+
+    const insertPayload = {
+      user_id: activeUid,
+      institution_id: realInstitutionId,
+      cluster_id: null,
+      ticket_number: ticketNumber,
+      title: complaintData.title,
+      description: complaintData.description,
+      category: complaintData.category,
+      location: complaintData.location || null,
+      severity: complaintData.severity || 'MEDIUM',
+      status: 'SUBMITTED',
+      priority,
+      department: categoryToDepartment(complaintData.category),
+    }
+
+    const { data: complaint, error: complaintErr } = await supabase
+      .from('complaints')
+      .insert(insertPayload)
       .select()
       .maybeSingle()
 
     if (complaintErr) {
-      console.warn('Error inserting complaint:', complaintErr)
-      return null
+      console.error('Supabase complaint INSERT error details:', {
+        code: complaintErr.code,
+        message: complaintErr.message,
+        details: complaintErr.details,
+        hint: complaintErr.hint,
+      })
+      return {
+        success: false,
+        error: complaintErr.message || 'Database rejected complaint insertion.',
+        details: complaintErr,
+      }
     }
 
     return {
-      ...complaint,
-      clusterKey,
-      clusterTitle,
+      success: true,
+      data: {
+        ...complaint,
+        clusterKey: null,
+        clusterTitle: null,
+      },
     }
   } catch (err) {
-    console.error('submitComplaint exception:', err)
-    return null
+    console.error('submitComplaint unhandled exception:', err)
+    return {
+      success: false,
+      error: err.message || 'Network exception while connecting to database.',
+    }
   }
 }
 
@@ -773,6 +767,48 @@ export async function fetchAdminAllComplaints(institutionId) {
   } catch (err) {
     console.error('fetchAdminAllComplaints exception:', err)
     return []
+  }
+}
+
+/**
+ * Fetches full details for a single complaint by its UUID.
+ * Used when an admin opens/inspects a specific issue.
+ */
+export async function fetchComplaintDetails(complaintId) {
+  if (!complaintId) return null
+
+  try {
+    const { data, error } = await supabase
+      .from('complaints')
+      .select('*, cluster:clusters(id, cluster_key, title, department)')
+      .eq('id', complaintId)
+      .maybeSingle()
+
+    if (error || !data) {
+      console.warn('Error fetching complaint details:', error)
+      return null
+    }
+
+    return {
+      id: data.id,
+      ticketNumber: data.ticket_number,
+      title: data.title,
+      description: data.description,
+      category: data.category,
+      location: data.location || '',
+      severity: data.severity,
+      priority: data.priority || 'MEDIUM',
+      status: data.status,
+      department: data.department || data.cluster?.department || '',
+      resolutionNotes: data.resolution_notes || '',
+      clusterKey: data.cluster?.cluster_key || null,
+      clusterTitle: data.cluster?.title || null,
+      submittedAt: formatRelativeTime(data.created_at),
+      createdAt: data.created_at,
+    }
+  } catch (err) {
+    console.error('fetchComplaintDetails exception:', err)
+    return null
   }
 }
 

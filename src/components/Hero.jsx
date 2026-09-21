@@ -53,7 +53,15 @@ const REPORTS = [
 ]
 
 export default function Hero() {
-  const { session, userRole, setCurrentScreen } = useAuth()
+  const { session, userRole, setCurrentScreen, userProfile } = useAuth()
+
+  const getDashboardScreen = () => {
+    if (userProfile?.onboardingComplete && userProfile?.collegeId) {
+      return userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard'
+    }
+    return 'role-selection'
+  }
+
   const [phase, setPhase] = useState(0) // 0: idle, 1: nodes active, 2: converging, 3: cluster formed
   const [hasStarted, setHasStarted] = useState(false)
   const sectionRef = useRef(null)
@@ -139,7 +147,7 @@ export default function Hero() {
               <button
                 className={styles.heroPrimaryBtn}
                 type="button"
-                onClick={() => setCurrentScreen(userRole === 'admin' ? 'admin-dashboard' : 'student-dashboard')}
+                onClick={() => setCurrentScreen(getDashboardScreen())}
                 aria-label="Enter Dashboard"
               >
                 ENTER DASHBOARD <span aria-hidden="true">→</span>
