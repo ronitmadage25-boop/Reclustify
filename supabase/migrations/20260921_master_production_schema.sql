@@ -232,17 +232,10 @@ CREATE POLICY "Anyone can view institutions"
 
 -- Profiles policies
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
-CREATE POLICY "Users can view own profile"
+DROP POLICY IF EXISTS "Authenticated users can view profiles" ON public.profiles;
+CREATE POLICY "Authenticated users can view profiles"
     ON public.profiles FOR SELECT TO authenticated
-    USING (
-        auth.uid() = id
-        OR EXISTS (
-            SELECT 1 FROM public.profiles admin_p
-            WHERE admin_p.id = auth.uid()
-              AND admin_p.role = 'admin'
-              AND admin_p.institution_id = profiles.institution_id
-        )
-    );
+    USING (true);
 
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 CREATE POLICY "Users can insert own profile"
